@@ -1,6 +1,6 @@
 // The PORT and SHOULD_PING parameters can be changed for testing purposes.
 const PORT = 1337
-const SHOULD_PING = true
+const SHOULD_PING = false
 
 const VERSION = '1.0'
 
@@ -15,7 +15,7 @@ const STAT_CONNECTED = 'CONNECTED'
 
 let server = net.createServer(function(socket) {
     clients.push(socket)
-	sendToClient(socket, `INFO Welcome to the server ${VERSION}`)
+    sendToClient(socket, `INFO Welcome to the server ${VERSION}`)
     socket.on('data', function(data) {
         let command = parseCommand(data.toString())
         let client = clients.find(c =>  c === this)
@@ -26,7 +26,7 @@ let server = net.createServer(function(socket) {
             if (command.type !== CMD_CONN) {
                 sendToClient(client, '403 Please log in first')
             } else if (!validUsernameFormat(command.payload)) {
-                sendToClient(client, '400 Username has an invalid format (only characters, numbers and underscores are allowed)')        
+                sendToClient(client, '400 Username has an invalid format (only characters, numbers and underscores are allowed)')
             } else if (userExists(command.payload)) {
                 sendToClient(client, '401 User already logged in')
             } else {
@@ -46,9 +46,9 @@ let server = net.createServer(function(socket) {
                 sendToClient(client, '200 Goodbye')
                 client.destroy()
             } else if (command.type === CMD_BCST) {
-                let connected = clients.filter(c => c.status === STAT_CONNECTED)
+                let connected = clients.filter(c => c.status == STAT_CONNECTED)
                 for(const other of connected) {
-                    if (client !== other) {
+                    if (client != other) {
                         sendToClient(other, `${CMD_BCST} ${client.username} ${command.payload}`)
                     }
                 }
@@ -87,7 +87,7 @@ function validUsernameFormat(username) {
 }
 
 function userExists(username) {
-    let client = clients.find(c =>  c.username === username)
+    let client = clients.find(c =>  c.username == username)
     return client !== undefined
 }
 
@@ -120,7 +120,7 @@ function heartbeat(client) {
 
 function stats() {
     console.log(`Total number of clients: ${clients.length}`)
-    let connected = clients.filter(c => c.status === STAT_CONNECTED)
+    let connected = clients.filter(c => c.status == STAT_CONNECTED)
     console.log(`Number of connected clients: ${connected.length}`)
 
 }
