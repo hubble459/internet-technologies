@@ -1,6 +1,6 @@
 // The PORT and SHOULD_PING parameters can be changed for testing purposes.
 const PORT = 1337
-const SHOULD_PING = false
+const SHOULD_PING = true
 
 const VERSION = '1.0'
 
@@ -17,6 +17,7 @@ let server = net.createServer(function(socket) {
     clients.push(socket)
     sendToClient(socket, `INFO Welcome to the server ${VERSION}`)
     socket.on('data', function(data) {
+        console.log(data.toString())
         let command = parseCommand(data.toString())
         let client = clients.find(c =>  c === this)
         console.log(`<< [${client.username}] ${command.type} ${command.payload}`)
@@ -46,9 +47,9 @@ let server = net.createServer(function(socket) {
                 sendToClient(client, '200 Goodbye')
                 client.destroy()
             } else if (command.type === CMD_BCST) {
-                let connected = clients.filter(c => c.status == STAT_CONNECTED)
+                let connected = clients.filter(c => c.status === STAT_CONNECTED)
                 for(const other of connected) {
-                    if (client != other) {
+                    if (client !== other) {
                         sendToClient(other, `${CMD_BCST} ${client.username} ${command.payload}`)
                     }
                 }
@@ -87,13 +88,16 @@ function validUsernameFormat(username) {
 }
 
 function userExists(username) {
-    let client = clients.find(c =>  c.username == username)
+    let client = clients.find(c => c.username === username)
     return client !== undefined
 }
 
 function sendToClient(client, message) {
     if (clients.find(c =>  c === client)) {
-        console.log(`>> [${client.username}] ${message}`)
+        console.log(client.username)
+        console.log(message)
+        console.log(message.byteLength)
+        console.log('[ ' + client.username + '] ' + message)
         client.write(`${message}\n`)
     } else {
         console.log(`Skipped send (${message}): client not active any more`)
@@ -120,7 +124,7 @@ function heartbeat(client) {
 
 function stats() {
     console.log(`Total number of clients: ${clients.length}`)
-    let connected = clients.filter(c => c.status == STAT_CONNECTED)
+    let connected = clients.filter(c => c.status === STAT_CONNECTED)
     console.log(`Number of connected clients: ${connected.length}`)
 
 }
