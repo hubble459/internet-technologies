@@ -12,7 +12,10 @@ public class Main {
     private PrintWriter writer;
 
     public static void main(String[] args) throws IOException {
-        new Main().run();
+//        new Main().run();
+
+        Client client = new Client("Discord 2");
+        client.setVisible(true);
     }
 
     public void run() throws IOException {
