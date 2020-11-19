@@ -6,9 +6,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class MyServer {
-    public static final int TIMEOUT = 5000; // -1 for no timeout, max 3.6e6 ms
+    public static final int TIMEOUT = -1; //5000; // -1 for no timeout, max 3.6e6 ms
     private static final int DEFAULT_PORT = 1337;
     private final ArrayList<SocketProcess> clients;
+    private final ArrayList<Room> rooms;
 
     public MyServer() throws IOException {
         this(DEFAULT_PORT);
@@ -17,6 +18,11 @@ public class MyServer {
     @SuppressWarnings("ALL")
     public MyServer(int port) throws IOException {
         clients = new ArrayList<>();
+        rooms = new ArrayList<>();
+
+        rooms.add(new Room("owo"));
+        rooms.add(new Room("swag"));
+        rooms.add(new Room("shrek"));
 
         // Create a socket to wait for clients.
         ServerSocket serverSocket = new ServerSocket(port);
@@ -33,6 +39,93 @@ public class MyServer {
                 @Override
                 public void disconnected() {
                     clients.remove(process);
+                }
+
+                @Override
+                public void sendRooms() {
+                    StringBuilder roomList = new StringBuilder();
+                    for (int i = 0; i < rooms.size(); i++) {
+                        Room room = rooms.get(i);
+                        roomList.append(room.toString()).append(";");
+                    }
+                    if (!rooms.isEmpty()) {
+                        roomList.setLength(roomList.length() - 1);
+                    }
+                    System.out.println(roomList);
+
+                    process.sendMessage(Command.ROOMS, roomList.toString());
+                }
+
+                @Override
+                public void joinRoom(String username, Message message) {
+                    String roomName = message.getPayload();
+                    boolean exist = false;
+                    Room current = null;
+                    if (roomName.matches("\\w{3,14}")) {
+                        for (Room room : rooms) {
+                            if (room.contains(process)) {
+                                current = room;
+
+                                if (exist) {
+                                    break;
+                                }
+                            }
+
+                            if (room.getRoomName().equals(roomName)) {
+                                room.addClient(process);
+                                process.sendMessage(Command.JOINED, room.getRoomName());
+                                exist = true;
+
+                                if (current != null) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!exist) {
+                        process.sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
+                    } else if (current != null) {
+                        current.removeClient(process);
+                    }
+                }
+
+                @Override
+                public void talkInRoom(String username, Message message) {
+                    message.setPayload((username + " " + message.getPayload()).trim());
+                    boolean inRoom = false;
+                    for (Room room : rooms) {
+                        if (room.contains(process)) {
+                            room.broadcast(message);
+                            inRoom = true;
+                            break;
+                        }
+                    }
+
+                    if (!inRoom) {
+                        process.sendMessage(Command.NOT_IN_A_ROON, "You haven't joined a room to talk in");
+                    }
+                }
+
+                @Override
+                public void voteKick(Message message) {
+
+                }
+
+                @Override
+                public void createRoom(Message message) {
+                    String roomName = message.getPayload();
+                    if (roomName.matches("\\w{3,14}")) {
+                        Room room = new Room(message.getPayload());
+                        rooms.add(room);
+                        process.sendMessage(Command.ROOM_CREATED, room.toString());
+                    } else {
+                        process.sendMessage(Command.INVALID_FORMAT, "Room name should be between 3 and 14 characters, and should match [a-zA-Z_0-9]");
+                    }
+                }
+
+                @Override
+                public void leaveRoom(String username) {
+
                 }
 
                 @Override

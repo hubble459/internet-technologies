@@ -27,11 +27,13 @@ public class SocketProcess implements Runnable {
 
     @Override
     public void run() {
+        assert listener != null;
+
         if (!socket.isClosed()) {
             username = "unknown@" + ip;
             System.out.println("[" + username + "] Connected to the server");
             connected = true;
-            sendMessage(new Message(Command.INFO, "Welcome"));
+            sendMessage(Command.INFO, "Welcome");
         }
 
         while (!socket.isClosed() && connected) {
@@ -51,7 +53,7 @@ public class SocketProcess implements Runnable {
 
             String[] split = line.split(" ");
             if (split.length == 0) {
-                sendMessage(new Message(Command.UNKNOWN, "Unknown command"));
+                sendMessage(Command.UNKNOWN, "Unknown command");
             } else {
                 String command = split[0];
                 String payload = "";
@@ -62,7 +64,7 @@ public class SocketProcess implements Runnable {
                 Message message;
                 Command cmd = Command.fromCommand(command);
                 if (cmd == null) {
-                    sendMessage(new Message(Command.UNKNOWN, "Unknown command"));
+                    sendMessage(Command.UNKNOWN, "Unknown command");
                     continue;
                 } else {
                     message = new Message(cmd, payload);
@@ -70,35 +72,7 @@ public class SocketProcess implements Runnable {
 
                 System.out.println("[" + username + "] " + message);
 
-                switch (message.getCommand()) {
-                    case LOGIN:
-                        if (payload.matches("\\w{3,14}")) {
-                            username = payload + "@" + ip;
-                            sendMessage(new Message(Command.LOGGED_IN, "Logged in as " + payload));
-                            loggedIn = true;
-                            if (listener != null) {
-                                listener.connected(username);
-                            }
-                        } else {
-                            sendMessage(new Message(Command.INVALID_FORMAT, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]"));
-                        }
-                        break;
-                    case QUIT:
-                        sendMessage(new Message(Command.QUITED, "Quit successfully"));
-                        connected = false;
-                        if (listener != null) {
-                            listener.disconnected();
-                        }
-                        break;
-                    case BROADCAST:
-                        if (loggedIn && listener != null) {
-                            listener.broadcast(username, message);
-                        }
-                        break;
-                    case PONG:
-                        ponged = true;
-                        break;
-                }
+                handleMessage(message);
             }
         }
 
@@ -112,9 +86,79 @@ public class SocketProcess implements Runnable {
             System.err.println(e.getMessage());
         }
 
-        if (listener != null) {
-            listener.disconnected();
+        listener.disconnected();
+    }
+
+    private void handleMessage(Message message) {
+        String payload = message.getPayload();
+
+        switch (message.getCommand()) {
+            case LOGIN:
+                if (payload.matches("\\w{3,14}")) {
+                    username = payload + "@" + ip;
+                    sendMessage(Command.LOGGED_IN, "Logged in as " + payload);
+                    loggedIn = true;
+                    listener.connected(username);
+                } else {
+                    sendMessage(Command.INVALID_FORMAT, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
+                }
+                break;
+            case ROOMS:
+                if (loggedIn) {
+                    listener.sendRooms();
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case CREATE_ROOM:
+                if (loggedIn) {
+                    listener.createRoom(message);
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case JOIN_ROOM:
+                if (loggedIn) {
+                    listener.joinRoom(username, message);
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case BROADCAST_IN_ROOM:
+                if (loggedIn) {
+                    listener.talkInRoom(username, message);
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case QUIT:
+                if (loggedIn) {
+                    sendMessage(Command.QUITED, "Quit successfully");
+                    connected = false;
+                    listener.disconnected();
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case BROADCAST:
+                if (loggedIn) {
+                    listener.broadcast(username, message);
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case PONG:
+                ponged = true;
+                break;
         }
+    }
+
+    private void notLoggedIn() {
+        sendMessage(Command.NOT_LOGGED_IN, "Please log in first");
+    }
+
+    public void sendMessage(Command command, String payload) {
+        sendMessage(new Message(command, payload));
     }
 
     public void sendMessage(Message message) {
@@ -127,7 +171,7 @@ public class SocketProcess implements Runnable {
 
     public void timeout() {
         if (listener != null) {
-            sendMessage(new Message(Command.DISCONNECTED, "Connection timed out"));
+            sendMessage(Command.DISCONNECTED, "Connection timed out");
             listener.disconnected();
         }
 
@@ -143,7 +187,7 @@ public class SocketProcess implements Runnable {
 
     public void ping() {
         ponged = false;
-        sendMessage(new Message(Command.PING, ""));
+        sendMessage(Command.PING, "");
     }
 
     public boolean hasPonged() {
@@ -153,8 +197,20 @@ public class SocketProcess implements Runnable {
     public interface OnActionListener {
         void disconnected();
 
+        void sendRooms();
+
+        void joinRoom(String username, Message message);
+
+        void voteKick(Message message);
+
+        void createRoom(Message message);
+
+        void leaveRoom(String username);
+
         void connected(String username);
 
         void broadcast(String username, Message message);
+
+        void talkInRoom(String username, Message message);
     }
 }
