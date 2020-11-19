@@ -21,7 +21,7 @@ public class SocketProcess implements Runnable {
         this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
 
-    public void addOnActionListener(OnActionListener listener) {
+    public void setOnActionListener(OnActionListener listener) {
         this.listener = listener;
     }
 
@@ -29,7 +29,7 @@ public class SocketProcess implements Runnable {
     public void run() {
         if (!socket.isClosed()) {
             username = "unknown@" + ip;
-            System.out.println("[" + username + "] Joined the server");
+            System.out.println("[" + username + "] Connected to the server");
             connected = true;
             sendMessage(new Message(Command.INFO, "Welcome"));
         }
@@ -58,6 +58,7 @@ public class SocketProcess implements Runnable {
                 if (split.length > 1) {
                     payload = line.substring(command.length() + 1);
                 }
+
                 Message message;
                 Command cmd = Command.fromCommand(command);
                 if (cmd == null) {

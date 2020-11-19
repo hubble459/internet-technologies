@@ -14,6 +14,7 @@ public class MyServer {
         this(DEFAULT_PORT);
     }
 
+    @SuppressWarnings("ALL")
     public MyServer(int port) throws IOException {
         clients = new ArrayList<>();
 
@@ -28,7 +29,7 @@ public class MyServer {
 
             // Starting a processing thread for each client
             SocketProcess process = new SocketProcess(socket);
-            process.addOnActionListener(new SocketProcess.OnActionListener() {
+            process.setOnActionListener(new SocketProcess.OnActionListener() {
                 @Override
                 public void disconnected() {
                     clients.remove(process);

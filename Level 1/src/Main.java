@@ -16,8 +16,8 @@ public class Main {
     }
 
     public void run() throws IOException {
-        socket = new Socket("86.87.206.20", 1337);
-//        socket = new Socket("127.0.0.1", 1337);
+//        socket = new Socket("86.87.206.20", 1337);
+        socket = new Socket("127.0.0.1", 1337);
         socket.setKeepAlive(true);
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
@@ -34,6 +34,7 @@ public class Main {
         socket.close();
     }
 
+    @SuppressWarnings("ALL")
     private final Runnable outputWriter = () -> {
         Scanner reader = new Scanner(System.in);
         writer = new PrintWriter(outputStream);
