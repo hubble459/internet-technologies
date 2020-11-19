@@ -73,7 +73,7 @@ public class MyServer {
 
                             if (room.getRoomName().equals(roomName)) {
                                 room.addClient(process);
-                                process.sendMessage(Command.JOINED, room.getRoomName());
+                                room.broadcast(new Message(Command.JOINED, username + " joined " + roomName));
                                 exist = true;
 
                                 if (current != null) {
