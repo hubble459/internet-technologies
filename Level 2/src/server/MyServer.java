@@ -38,6 +38,7 @@ public class MyServer {
             process.setOnActionListener(new SocketProcess.OnActionListener() {
                 @Override
                 public void disconnected() {
+                    broadcast(process.getUsername(), new Message(Command.LEFT, "left :("));
                     clients.remove(process);
                 }
 
@@ -72,8 +73,7 @@ public class MyServer {
                             }
 
                             if (room.getRoomName().equals(roomName)) {
-                                room.addClient(process);
-                                room.broadcast(new Message(Command.JOINED, username + " joined " + roomName));
+                                room.join(process);
                                 exist = true;
 
                                 if (current != null) {
@@ -85,7 +85,7 @@ public class MyServer {
                     if (!exist) {
                         process.sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
                     } else if (current != null) {
-                        current.removeClient(process);
+                        current.leave(process);
                     }
                 }
 
@@ -102,7 +102,7 @@ public class MyServer {
                     }
 
                     if (!inRoom) {
-                        process.sendMessage(Command.NOT_IN_A_ROON, "You haven't joined a room to talk in");
+                        process.sendMessage(Command.NOT_IN_A_ROOM, "You haven't joined a room to talk in");
                     }
                 }
 
@@ -125,7 +125,18 @@ public class MyServer {
 
                 @Override
                 public void leaveRoom(String username) {
+                    boolean isInRoom = false;
+                    for (Room room : rooms) {
+                        if (room.contains(process)) {
+                            room.leave(process);
+                            isInRoom = true;
+                            break;
+                        }
+                    }
 
+                    if (!isInRoom) {
+                        process.sendMessage(Command.NOT_IN_A_ROOM, "You're not in a room!");
+                    }
                 }
 
                 @Override

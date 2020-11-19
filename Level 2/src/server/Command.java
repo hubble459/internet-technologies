@@ -20,11 +20,12 @@ public enum Command {
     ALREADY_LOGGED_IN("401"),
     INVALID_FORMAT("402"),
     NOT_LOGGED_IN("403"),
-    NOT_IN_A_ROON("404"),
+    NOT_IN_A_ROOM("404"),
     LOGGED_IN("200"),
     QUITED("201"),
     ROOM_CREATED("203"),
-    JOINED("204");
+    JOINED("204"),
+    LEFT("205");
 
     private final String command;
 

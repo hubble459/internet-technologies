@@ -185,6 +185,10 @@ public class SocketProcess implements Runnable {
         }
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void ping() {
         ponged = false;
         sendMessage(Command.PING, "");

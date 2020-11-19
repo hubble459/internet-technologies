@@ -17,11 +17,13 @@ public class Room {
         }
     }
 
-    public void addClient(SocketProcess client) {
+    public void join(SocketProcess client) {
+        broadcast(new Message(Command.JOINED, client.getUsername() + " joined " + roomName));
         clients.add(client);
     }
 
-    public void removeClient(SocketProcess client) {
+    public void leave(SocketProcess client) {
+        broadcast(new Message(Command.LEFT, client.getUsername() + " left " + roomName));
         clients.remove(client);
     }
 
