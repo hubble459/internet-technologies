@@ -7,11 +7,12 @@ import java.util.Scanner;
 
 public class NetCat {
     private static Socket socket;
+    private static PrintWriter writer;
 
     public static void main(String[] args) throws IOException {
-//        socket = new Socket("127.0.0.1", 1337);
-        socket = new Socket("86.87.206.20", 1337);
-        PrintWriter writer = new PrintWriter(socket.getOutputStream());
+        socket = new Socket("127.0.0.1", 1337);
+//        socket = new Socket("86.87.206.20", 1337);
+        writer = new PrintWriter(socket.getOutputStream());
 
         new Thread(new inputReader()).start();
 
@@ -30,11 +31,15 @@ public class NetCat {
 
                 while (!socket.isClosed()) {
                     String line = reader.readLine();
+                    if (line == null) break;
+
                     System.out.println(line);
                     if (line.startsWith("DCST")) {
                         socket.close();
                     }
                 }
+
+                writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

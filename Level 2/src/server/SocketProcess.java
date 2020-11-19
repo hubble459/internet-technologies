@@ -76,6 +76,8 @@ public class SocketProcess implements Runnable {
             }
         }
 
+        listener.disconnected();
+
         try {
             if (!socket.isClosed()) {
                 socket.close();
@@ -85,8 +87,6 @@ public class SocketProcess implements Runnable {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
-
-        listener.disconnected();
     }
 
     private void handleMessage(Message message) {
@@ -135,7 +135,6 @@ public class SocketProcess implements Runnable {
                 if (loggedIn) {
                     sendMessage(Command.QUITED, "Quit successfully");
                     connected = false;
-                    listener.disconnected();
                 } else {
                     notLoggedIn();
                 }

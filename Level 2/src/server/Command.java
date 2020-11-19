@@ -5,7 +5,7 @@ public enum Command {
     JOIN_ROOM("JOIN"), // JOIN <room_id> (to join)
     BROADCAST_IN_ROOM("TALK"), // TALK <message> (to speak in room)
     CREATE_ROOM("MAKE"), // MAKE <room_name> (to create)
-    WHISPER("PM"), // PM <username> (to private message)
+    WHISPER("SEND"), // SEND <username> (to private message)
     VOTE_KICK("KICK"), // KICK <username> (to vote for kick)
     VOTE_KICK_TRUE("VYES"), // VYES <username> (to vote yes)
     VOTE_KICK_FALSE("VNO"), // VNO <username> (to vote no)
