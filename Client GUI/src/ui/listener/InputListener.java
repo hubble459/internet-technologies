@@ -10,9 +10,9 @@ import java.net.Socket;
 public class InputListener implements Runnable {
     private final Socket socket;
     private final BufferedReader reader;
-    private final OnReply onReplyListener;
+    private final OnReplyListener onReplyListener;
 
-    public InputListener(Socket socket, OnReply listener) throws IOException {
+    public InputListener(Socket socket, OnReplyListener listener) throws IOException {
         this.socket = socket;
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.onReplyListener = listener;
@@ -33,7 +33,7 @@ public class InputListener implements Runnable {
         }
     }
 
-    public interface OnReply {
+    public interface OnReplyListener {
         void reply(Message message);
 
         void onClosed();

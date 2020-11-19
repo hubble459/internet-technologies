@@ -11,8 +11,9 @@ import java.net.Socket;
 import java.util.Random;
 
 public class Client extends JFrame {
-    private final int TIMEOUT = 5000;
+    private final int TIMEOUT = 10000;
     private final DefaultListModel<String> dlm;
+    private final JList<String> list;
     private JTextField textField;
     private JButton sendButton;
     private JPanel mainPanel;
@@ -20,10 +21,14 @@ public class Client extends JFrame {
     private Socket socket;
     private PrintWriter writer;
     private Thread inputThread;
-    private InputListener.OnReply onReplyListener;
+    private InputListener.OnReplyListener onReplyListener;
     private boolean connected;
     private String username;
     private long last;
+
+    public static void main(String[] args) {
+        new Client("Discord 2").setVisible(true);
+    }
 
     public Client(String title) throws HeadlessException {
         super(title);
@@ -44,7 +49,7 @@ public class Client extends JFrame {
         });
 
         dlm = new DefaultListModel<>();
-        JList<String> list = new JList<>(dlm);
+        list = new JList<>(dlm);
         messagePanel.add(new JScrollPane(list));
 
         pack();
@@ -57,7 +62,7 @@ public class Client extends JFrame {
     }
 
     private void init() {
-        onReplyListener = new InputListener.OnReply() {
+        onReplyListener = new InputListener.OnReplyListener() {
             @Override
             public void reply(Message message) {
                 if (connected) {
@@ -68,11 +73,12 @@ public class Client extends JFrame {
                     }
 
                     if (message.getType().equals(Message.PING)) {
-                        if (System.currentTimeMillis() - last < TIMEOUT) {
+                        if (last == 0) last = System.currentTimeMillis();
+                        if (System.currentTimeMillis() - last <= TIMEOUT) {
                             Message msg = new Message(username, Message.PONG, "");
                             send(msg);
-                            received(msg);
                         }
+                        return;
                     }
 
                     if (message.getType().equals(Message.DCSN)) {
@@ -118,7 +124,10 @@ public class Client extends JFrame {
     }
 
     private void received(Message message) {
-        SwingUtilities.invokeLater(() -> dlm.addElement(message.toString()));
+        SwingUtilities.invokeLater(() -> {
+            dlm.addElement(message.toString());
+            list.ensureIndexIsVisible(dlm.getSize() - 1);
+        });
     }
 
     private void login() {
@@ -152,7 +161,6 @@ public class Client extends JFrame {
         if (!message.isEmpty() && connected) {
             Message msg = new Message(username, Message.BCST, message);
             send(msg);
-            received(msg);
 
             SwingUtilities.invokeLater(() -> textField.setText(""));
 

@@ -1,7 +1,6 @@
 package ui.model;
 
 import java.time.LocalTime;
-import java.util.Arrays;
 
 public class Message {
     public static final String CONN = "CONN";
@@ -28,8 +27,6 @@ public class Message {
     }
 
     public Message(String[] parts) {
-        System.out.println(Arrays.toString(parts));
-
         time = time();
         type = parts[0];
 
@@ -55,7 +52,8 @@ public class Message {
 
     @Override
     public String toString() {
-        return "[" + sender + "] " + message;
+        String tp = type.equals(BCST) ? "" : type + " ";
+        return "[" + sender + "] " + tp + message;
     }
 
     public String getType() {
