@@ -2,7 +2,7 @@
 const PORT = 1337
 const SHOULD_PING = true
 
-const VERSION = '1.0'
+const VERSION = '1.1'
 
 let net = require('net')
 let clients = []
@@ -15,9 +15,8 @@ const STAT_CONNECTED = 'CONNECTED'
 
 let server = net.createServer(function(socket) {
     clients.push(socket)
-    sendToClient(socket, `INFO Welcome to the server ${VERSION}`)
+	sendToClient(socket, `INFO Welcome to the server ${VERSION}`)
     socket.on('data', function(data) {
-        console.log(data.toString())
         let command = parseCommand(data.toString())
         let client = clients.find(c =>  c === this)
         console.log(`<< [${client.username}] ${command.type} ${command.payload}`)
@@ -27,7 +26,7 @@ let server = net.createServer(function(socket) {
             if (command.type !== CMD_CONN) {
                 sendToClient(client, '403 Please log in first')
             } else if (!validUsernameFormat(command.payload)) {
-                sendToClient(client, '400 Username has an invalid format (only characters, numbers and underscores are allowed)')
+                sendToClient(client, '400 Username has an invalid format (only characters, numbers and underscores are allowed)')        
             } else if (userExists(command.payload)) {
                 sendToClient(client, '401 User already logged in')
             } else {
@@ -47,11 +46,13 @@ let server = net.createServer(function(socket) {
                 sendToClient(client, '200 Goodbye')
                 client.destroy()
             } else if (command.type === CMD_BCST) {
-                let connected = clients.filter(c => c.status === STAT_CONNECTED)
+                let connected = clients.filter(c => c.status == STAT_CONNECTED) 
                 for(const other of connected) {
-                    if (client !== other) {
+                    if (client === other) {
+                        sendToClient(client, `200 ${CMD_BCST} ${command.payload}`)
+                    } else {
                         sendToClient(other, `${CMD_BCST} ${client.username} ${command.payload}`)
-                    }
+                    } 
                 }
             } else if (command.type === CMD_PONG) {
                 receivedPong = true
@@ -70,11 +71,13 @@ let server = net.createServer(function(socket) {
         }
         stats()
     })
+    socket.on('error', function(err) { 
+        console.log("Socket error " + err)
+    })
 })
 
 function parseCommand(command) {
-    // Remove trailing newline (\n)
-    let clean = command.substr(0, command.length - 1)
+    let clean = command.trim()
     let parts = clean.split(' ')
     return {
         type: parts[0],
@@ -88,16 +91,13 @@ function validUsernameFormat(username) {
 }
 
 function userExists(username) {
-    let client = clients.find(c => c.username === username)
+    let client = clients.find(c =>  c.username == username)
     return client !== undefined
 }
 
 function sendToClient(client, message) {
     if (clients.find(c =>  c === client)) {
-        console.log(client.username)
-        console.log(message)
-        console.log(message.byteLength)
-        console.log('[ ' + client.username + '] ' + message)
+        console.log(`>> [${client.username}] ${message}`)
         client.write(`${message}\n`)
     } else {
         console.log(`Skipped send (${message}): client not active any more`)
@@ -124,7 +124,7 @@ function heartbeat(client) {
 
 function stats() {
     console.log(`Total number of clients: ${clients.length}`)
-    let connected = clients.filter(c => c.status === STAT_CONNECTED)
+    let connected = clients.filter(c => c.status == STAT_CONNECTED) 
     console.log(`Number of connected clients: ${connected.length}`)
 
 }
