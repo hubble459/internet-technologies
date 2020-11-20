@@ -22,6 +22,7 @@ public class MyServer {
         ArrayList<SocketProcess> clients = new ArrayList<>();
         ArrayList<Room> rooms = new ArrayList<>();
 
+
         rooms.add(new Room("owo"));
         rooms.add(new Room("swag"));
         rooms.add(new Room("shrek"));

@@ -13,6 +13,7 @@ public class SocketProcess implements Runnable {
     private boolean connected;
     private boolean loggedIn;
     private boolean ponged;
+    private Room room;
     private OnLoginListener onLoginListener;
     private String username;
 
@@ -95,7 +96,74 @@ public class SocketProcess implements Runnable {
     private void handleMessage(Message message) {
         String payload = message.getPayload();
 
+        // joost eskdgkjfwnke wefvg rwfng
+        // part[0]
+        //
         switch (message.getCommand()) {
+            case WHISPER:
+                if (loggedIn) {
+                    String[] split = payload.split(" ");
+                    if (payload.isEmpty() || split.length <= 1) {
+                        // Empty line is an unknown command
+                        sendMessage(Command.UNKNOWN, "No username/message given");
+                    } else {
+                        String username = split[0];
+                        String msg = payload.substring(username.length() + 1);
+
+                        privateMessage(username, msg);
+                    }
+                } else{
+                    notLoggedIn();
+                }
+                break;
+            case VOTE_KICK:
+                if (loggedIn) {
+                    if (room != null) {
+                        SocketProcess user = getUserFromUsername(payload);
+                        if (user != null) {
+                            room.addKickRequest(user);
+                        } else {
+                            sendMessage(Command.UNKNOWN, "No user with this username found");
+                        }
+                    } else {
+                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+                    }
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case VOTE_KICK_TRUE:
+                if (loggedIn) {
+                    if (room != null) {
+                        SocketProcess user = getUserFromUsername(payload);
+                        if (user != null) {
+                            room.voteFor(user, true);
+                        } else {
+                            sendMessage(Command.UNKNOWN, "No user with this username found");
+                        }
+                    } else {
+                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+                    }
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case VOTE_KICK_FALSE:
+                if (loggedIn) {
+                    if (room != null) {
+
+                        SocketProcess user = getUserFromUsername(payload);
+                        if (user != null) {
+                            room.voteFor(user, false);
+                        } else
+                            sendMessage(Command.UNKNOWN, "No user with this username found");
+                    } else {
+                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+                    }
+                } else {
+                    notLoggedIn();
+                }
+                break;
             case LOGIN:
                 login(payload);
                 break;
@@ -159,6 +227,26 @@ public class SocketProcess implements Runnable {
             case PONG:
                 ponged = true;
                 break;
+        }
+    }
+
+    private SocketProcess getUserFromUsername(String username) {
+        for (SocketProcess client : clients) {
+            if (client.getUsername().equals(username)) {
+                return client;
+            }
+        }
+        return null;
+    }
+
+    private void privateMessage(String username, String message) {
+        SocketProcess user = getUserFromUsername(username);
+        if (user != null){
+            Message msg = new Message(Command.WHISPER, this.username + " " + message);
+            user.sendMessage(msg);
+            sendMessage(msg);
+        } else {
+            sendMessage(Command.UNKNOWN, "No user with this username found");
         }
     }
 
@@ -247,11 +335,9 @@ public class SocketProcess implements Runnable {
     public void sendUsers() {
         StringBuilder userList = new StringBuilder();
         for (SocketProcess user : clients) {
-            if (user != this) {
-                userList.append(user.getUsername()).append(";");
-            }
+            userList.append(user.getUsername()).append(";");
         }
-        if (clients.size() > 1) {
+        if (!clients.isEmpty()) {
             // Remove trailing ;
             userList.setLength(userList.length() - 1);
         }
@@ -287,6 +373,7 @@ public class SocketProcess implements Runnable {
                 }
 
                 if (room.getRoomName().equals(roomName)) {
+                    this.room = room;
                     room.join(this);
                     exist = true;
 
@@ -351,6 +438,7 @@ public class SocketProcess implements Runnable {
         boolean isInRoom = false;
         for (Room room : rooms) {
             if (room.contains(this)) {
+                this.room = null;
                 room.leave(this);
                 isInRoom = true;
                 break;

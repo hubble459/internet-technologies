@@ -24,8 +24,12 @@ public enum Command {
     NOT_LOGGED_IN("403"),
     NOT_IN_A_ROOM("404"),
     ROOM_NAME_EXIST("405"),
+    NO_KICK_REQUEST("406"),
+    KICK_ALREADY_REQUESTED("407"),
+    KICK_REQUEST_TIMED_OUT("408"),
     LOGGED_IN("200"),
     QUITED("201"),
+    KICKED("202"),
     ROOM_CREATED("203"),
     JOINED("204"),
     LEFT("205");
