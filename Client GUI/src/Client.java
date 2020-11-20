@@ -2,6 +2,8 @@ import ui.listener.InputListener;
 import ui.model.Message;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -52,6 +54,29 @@ public class Client extends JFrame {
         list = new JList<>(dlm);
         messagePanel.add(new JScrollPane(list));
 
+        JMenuBar menuBar = new JMenuBar();
+        JMenu quit = new JMenu("Quit");
+        quit.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                send(new Message("", "QUIT",""));
+                disconnect();
+                dispose();
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
+            }
+        });
+        menuBar.add(quit);
+        setJMenuBar(menuBar);
+
         pack();
     }
 
@@ -85,6 +110,13 @@ public class Client extends JFrame {
                         message.setMessage("Disconnected due to inactivity");
                         textField.setEnabled(false);
                         sendButton.setEnabled(false);
+                    }
+
+                    if (message.getType().equals(Message.GOOD) && message.getMessage().startsWith(Message.BCST)) {
+                        String m = message.getMessage().substring(Message.BCST.length() + 1);
+                        message.setMessage(m);
+                        message.setSender(username);
+                        message.setType("");
                     }
 
                     received(message);

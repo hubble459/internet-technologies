@@ -1,8 +1,10 @@
 package server;
 
 public enum Command {
+    USERS("USRS"), // USRS (get the list of users)
     ROOMS("ROOMS"), // ROOMS (get the list of rooms)
     JOIN_ROOM("JOIN"), // JOIN <room_id> (to join)
+    LEAVE_ROOM("LEAVE"), // LEAVE (to leave room)
     BROADCAST_IN_ROOM("TALK"), // TALK <message> (to speak in room)
     CREATE_ROOM("MAKE"), // MAKE <room_name> (to create)
     WHISPER("SEND"), // SEND <username> (to private message)
@@ -21,6 +23,7 @@ public enum Command {
     INVALID_FORMAT("402"),
     NOT_LOGGED_IN("403"),
     NOT_IN_A_ROOM("404"),
+    ROOM_NAME_EXIST("405"),
     LOGGED_IN("200"),
     QUITED("201"),
     ROOM_CREATED("203"),

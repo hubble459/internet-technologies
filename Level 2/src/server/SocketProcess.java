@@ -2,83 +2,86 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class SocketProcess implements Runnable {
     private final Socket socket;
     private final BufferedReader reader;
     private final PrintWriter writer;
-    private final String ip;
+    private final ArrayList<SocketProcess> clients;
+    private final ArrayList<Room> rooms;
     private boolean connected;
     private boolean loggedIn;
     private boolean ponged;
-    private OnActionListener listener;
+    private OnLoginListener onLoginListener;
     private String username;
 
-    public SocketProcess(Socket socket) throws IOException {
+    public SocketProcess(Socket socket, ArrayList<SocketProcess> clients, ArrayList<Room> rooms) throws IOException {
         this.socket = socket;
-        this.ip = socket.getInetAddress().getHostAddress();
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+        this.clients = clients;
+        this.rooms = rooms;
     }
 
-    public void setOnActionListener(OnActionListener listener) {
-        this.listener = listener;
+    public void setOnLoginListener(OnLoginListener onLoginListener) {
+        this.onLoginListener = onLoginListener;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     @Override
     public void run() {
-        assert listener != null;
-
+        /*
+         * When connected send an INFO message welcoming the client
+         * And log it in the console
+         */
         if (!socket.isClosed()) {
-            username = "unknown@" + ip;
+            username = socket.getInetAddress().getHostAddress();
             System.out.println("[" + username + "] Connected to the server");
             connected = true;
             sendMessage(Command.INFO, "Welcome");
         }
 
+        /*
+         * While the socket isn't closed by either the client or the server, keep listening for input
+         */
         while (!socket.isClosed() && connected) {
             String line;
             try {
+                // Read line from client
                 line = reader.readLine();
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 break;
             }
 
+            // If the line is null the connection is probably broken
             if (line == null) {
-                continue;
+                connected = false;
+                break;
             } else {
+                // Make sure there are no trailing white spaces
                 line = line.trim();
             }
 
-            String[] split = line.split(" ");
-            if (split.length == 0) {
+            // Dissect the message
+            Message message = Message.fromString(line);
+            if (message == null) {
                 sendMessage(Command.UNKNOWN, "Unknown command");
             } else {
-                String command = split[0];
-                String payload = "";
-                if (split.length > 1) {
-                    payload = line.substring(command.length() + 1);
-                }
-
-                Message message;
-                Command cmd = Command.fromCommand(command);
-                if (cmd == null) {
-                    sendMessage(Command.UNKNOWN, "Unknown command");
-                    continue;
-                } else {
-                    message = new Message(cmd, payload);
-                }
-
                 System.out.println("[" + username + "] " + message);
-
                 handleMessage(message);
             }
         }
 
-        listener.disconnected();
+        // If out of the while loop, you are disconnected
+        disconnected();
 
         try {
+            // Close streams if they aren't already closed
             if (!socket.isClosed()) {
                 socket.close();
             }
@@ -94,39 +97,46 @@ public class SocketProcess implements Runnable {
 
         switch (message.getCommand()) {
             case LOGIN:
-                if (payload.matches("\\w{3,14}")) {
-                    username = payload + "@" + ip;
-                    sendMessage(Command.LOGGED_IN, "Logged in as " + payload);
-                    loggedIn = true;
-                    listener.connected(username);
+                login(payload);
+                break;
+            case USERS:
+                if (loggedIn) {
+                    sendUsers();
                 } else {
-                    sendMessage(Command.INVALID_FORMAT, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
+                    notLoggedIn();
                 }
                 break;
             case ROOMS:
                 if (loggedIn) {
-                    listener.sendRooms();
+                    sendRooms();
                 } else {
                     notLoggedIn();
                 }
                 break;
             case CREATE_ROOM:
                 if (loggedIn) {
-                    listener.createRoom(message);
+                    createRoom(message);
                 } else {
                     notLoggedIn();
                 }
                 break;
             case JOIN_ROOM:
                 if (loggedIn) {
-                    listener.joinRoom(username, message);
+                    joinRoom(message);
+                } else {
+                    notLoggedIn();
+                }
+                break;
+            case LEAVE_ROOM:
+                if (loggedIn) {
+                    leaveRoom();
                 } else {
                     notLoggedIn();
                 }
                 break;
             case BROADCAST_IN_ROOM:
                 if (loggedIn) {
-                    listener.talkInRoom(username, message);
+                    talkInRoom(message);
                 } else {
                     notLoggedIn();
                 }
@@ -141,7 +151,7 @@ public class SocketProcess implements Runnable {
                 break;
             case BROADCAST:
                 if (loggedIn) {
-                    listener.broadcast(username, message);
+                    broadcast(message);
                 } else {
                     notLoggedIn();
                 }
@@ -150,6 +160,44 @@ public class SocketProcess implements Runnable {
                 ponged = true;
                 break;
         }
+    }
+
+    private void login(String payload) {
+        if (!loggedIn) {
+            if (payload.matches("\\w{3,14}")) {
+                if (!usernameExists(payload)) {
+                    username = payload;
+                    loggedIn = true;
+
+                    sendMessage(Command.LOGGED_IN, "Logged in as " + username);
+
+                    Message message = new Message(Command.JOINED, username);
+                    for (SocketProcess client : clients) {
+                        client.sendMessage(message);
+                    }
+
+                    clients.add(this);
+
+                    // Tell listener that we logged in
+                    if (onLoginListener != null) onLoginListener.loggedIn(this);
+                } else {
+                    sendMessage(Command.ALREADY_LOGGED_IN, "User with username '" + payload + "' is already logged in");
+                }
+            } else {
+                sendMessage(Command.INVALID_FORMAT, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
+            }
+        } else {
+            sendMessage(Command.ALREADY_LOGGED_IN, "Please logout first");
+        }
+    }
+
+    private boolean usernameExists(String username) {
+        for (SocketProcess client : clients) {
+            if (client.username.equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void notLoggedIn() {
@@ -169,10 +217,8 @@ public class SocketProcess implements Runnable {
     }
 
     public void timeout() {
-        if (listener != null) {
-            sendMessage(Command.DISCONNECTED, "Connection timed out");
-            listener.disconnected();
-        }
+        sendMessage(Command.DISCONNECTED, "Connection timed out");
+        disconnected();
 
         connected = false;
         if (!socket.isClosed()) {
@@ -184,10 +230,6 @@ public class SocketProcess implements Runnable {
         }
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     public void ping() {
         ponged = false;
         sendMessage(Command.PING, "");
@@ -197,23 +239,137 @@ public class SocketProcess implements Runnable {
         return ponged;
     }
 
-    public interface OnActionListener {
-        void disconnected();
+    public void disconnected() {
+        broadcast(new Message(Command.LEFT, "left :("));
+        clients.remove(this);
+    }
 
-        void sendRooms();
+    public void sendUsers() {
+        StringBuilder userList = new StringBuilder();
+        for (SocketProcess user : clients) {
+            if (user != this) {
+                userList.append(user.getUsername()).append(";");
+            }
+        }
+        if (clients.size() > 1) {
+            // Remove trailing ;
+            userList.setLength(userList.length() - 1);
+        }
 
-        void joinRoom(String username, Message message);
+        sendMessage(Command.USERS, userList.toString());
+    }
 
-        void voteKick(Message message);
+    public void sendRooms() {
+        StringBuilder roomList = new StringBuilder();
+        for (Room room : rooms) {
+            roomList.append(room.getRoomName()).append(";");
+        }
+        if (!rooms.isEmpty()) {
+            // Remove trailing ;
+            roomList.setLength(roomList.length() - 1);
+        }
 
-        void createRoom(Message message);
+        sendMessage(Command.ROOMS, roomList.toString());
+    }
 
-        void leaveRoom(String username);
+    public void joinRoom(Message message) {
+        String roomName = message.getPayload();
+        boolean exist = false;
+        Room current = null;
+        if (roomName.matches("\\w{3,14}")) {
+            for (Room room : rooms) {
+                if (room.contains(this)) {
+                    current = room;
 
-        void connected(String username);
+                    if (exist) {
+                        break;
+                    }
+                }
 
-        void broadcast(String username, Message message);
+                if (room.getRoomName().equals(roomName)) {
+                    room.join(this);
+                    exist = true;
 
-        void talkInRoom(String username, Message message);
+                    if (current != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (!exist) {
+            sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
+        } else if (current != null) {
+            current.leave(this);
+        }
+    }
+
+    public void talkInRoom(Message message) {
+        message.setPayload((username + " " + message.getPayload()).trim());
+        boolean inRoom = false;
+        for (Room room : rooms) {
+            if (room.contains(this)) {
+                room.broadcast(message);
+                inRoom = true;
+                break;
+            }
+        }
+
+        if (!inRoom) {
+            sendMessage(Command.NOT_IN_A_ROOM, "You haven't joined a room to talk in");
+        }
+    }
+
+    public void voteKick(Message message) {
+
+    }
+
+    public void createRoom(Message message) {
+        String roomName = message.getPayload();
+        if (!roomNameExists(roomName)) {
+            if (roomName.matches("\\w{3,14}")) {
+                Room room = new Room(message.getPayload());
+                rooms.add(room);
+                sendMessage(Command.ROOM_CREATED, room.toString());
+            } else {
+                sendMessage(Command.INVALID_FORMAT, "Room name should be between 3 and 14 characters, and should match [a-zA-Z_0-9]");
+            }
+        }else {
+            sendMessage(Command.ROOM_NAME_EXIST, "Room with name " + roomName + " already exists");
+        }
+    }
+
+    private boolean roomNameExists(String roomName) {
+        for (Room room: rooms) {
+            if (room.getRoomName().equals(roomName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void leaveRoom() {
+        boolean isInRoom = false;
+        for (Room room : rooms) {
+            if (room.contains(this)) {
+                room.leave(this);
+                isInRoom = true;
+                break;
+            }
+        }
+
+        if (!isInRoom) {
+            sendMessage(Command.NOT_IN_A_ROOM, "You're not in a room!");
+        }
+    }
+
+    public void broadcast(Message message) {
+        message.setPayload((username + " " + message.getPayload()).trim());
+        for (SocketProcess client : clients) {
+            client.sendMessage(message);
+        }
+    }
+
+    public interface OnLoginListener {
+        void loggedIn(SocketProcess process);
     }
 }
