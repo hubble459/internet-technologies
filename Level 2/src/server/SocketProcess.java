@@ -406,10 +406,6 @@ public class SocketProcess implements Runnable {
         }
     }
 
-    public void voteKick(Message message) {
-
-    }
-
     public void createRoom(Message message) {
         String roomName = message.getPayload();
         if (!roomNameExists(roomName)) {
