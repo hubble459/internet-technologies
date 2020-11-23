@@ -9,8 +9,17 @@ public class MyServer {
     public static final int TIMEOUT = -1; //5000; // -1 for no timeout, max 3.6e6 ms
     private static final int DEFAULT_PORT = 1337;
 
-    public static void main(String[] args) throws IOException {
-        new MyServer();
+    public static void main(String[] args) {
+        int port = DEFAULT_PORT;
+        try {
+            port = Integer.parseInt(args[0]);
+        } catch (Exception ignored) {
+        }
+        try {
+            new MyServer(port);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public MyServer() throws IOException {
@@ -30,7 +39,7 @@ public class MyServer {
         // Create a socket to wait for clients.
         ServerSocket serverSocket = new ServerSocket(port);
 
-        System.out.println("[SERVER] Started");
+        System.out.println("[SERVER] Started on port " + serverSocket.getLocalPort());
 
         while (true) {
             // Wait for an incoming client-connection request (blocking).
