@@ -30,4 +30,9 @@ public class Message {
     public Command getCommand() {
         return command;
     }
+
+    @Override
+    public String toString() {
+        return command + " " + payload;
+    }
 }

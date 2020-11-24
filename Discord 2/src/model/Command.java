@@ -40,11 +40,6 @@ public enum Command {
         this.command = command;
     }
 
-    @Override
-    public String toString() {
-        return command;
-    }
-
     public static Command fromString(String command) {
         for (Command value : values()) {
             if (value.command.equals(command)) {
@@ -52,5 +47,10 @@ public enum Command {
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return command;
     }
 }
