@@ -19,12 +19,13 @@ public class ChatPanel {
         messageList.setModel(messages);
 
         SocketUtil.onReceive(message -> {
-            System.out.println("Received: " + message);
-            channel.addMessage(message);
-            SwingUtilities.invokeLater(() -> {
-                messages.addElement(message);
-            });
-
+            if (channel.getCommand() == message.getCommand()) {
+                channel.addMessage(message);
+                SwingUtilities.invokeLater(() -> {
+                    messages.addElement(message);
+                    messageList.ensureIndexIsVisible(messages.getSize() - 1);
+                });
+            }
         });
 
         textField.addActionListener(e -> sendFromTextField());
@@ -45,6 +46,7 @@ public class ChatPanel {
 
     public void setChannel(Channel channel) {
         this.channel = channel;
+        channel.clearNotifications();
         SwingUtilities.invokeLater(() -> {
             messages.clear();
             messages.addAll(channel.getMessages());

@@ -1,7 +1,7 @@
 package model;
 
 public enum Command {
-    USERS("USRS"), // USRS (get the list of users)
+    USERS("USERS"), // USERS (get the list of users)
     ROOMS("ROOMS"), // ROOMS (get the list of rooms)
     JOIN_ROOM("JOIN"), // JOIN <room_id> (to join)
     LEAVE_ROOM("LEAVE"), // LEAVE (to leave room)
@@ -31,7 +31,8 @@ public enum Command {
     QUITED("201"),
     KICKED("202"),
     ROOM_CREATED("203"),
-    JOINED("204"),
+    JOINED_SERVER("204"),
+    JOINED_ROOM("206"),
     LEFT("205");
 
     private final String command;

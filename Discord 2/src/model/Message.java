@@ -33,6 +33,17 @@ public class Message {
 
     @Override
     public String toString() {
-        return command + " " + payload;
+        if (command == Command.BROADCAST || command == Command.BROADCAST_IN_ROOM || command == Command.WHISPER) {
+            String[] split = payload.split(" ", 2);
+            String username = split[0];
+            String message = "";
+            if (split.length > 1) {
+                message = split[1];
+            }
+
+            return "<html><strong>" + username + "</strong><br/>" + message + "</html>";
+        } else {
+            return command + " " + payload;
+        }
     }
 }

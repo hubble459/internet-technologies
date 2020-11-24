@@ -146,7 +146,7 @@ public class SocketUtil {
 
     public static void send(Message message) {
         if (instance.socket != null && !instance.socket.isClosed()) {
-            instance.writer.println(message.toString());
+            instance.writer.println(message.getCommand() + " " + message.getPayload());
             instance.writer.flush();
         }
     }

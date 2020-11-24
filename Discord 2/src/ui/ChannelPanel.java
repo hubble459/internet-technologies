@@ -5,6 +5,8 @@ import model.Command;
 import util.SocketUtil;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
 
 public class ChannelPanel {
     private final DefaultListModel<Channel> rooms;
@@ -13,6 +15,7 @@ public class ChannelPanel {
     private JTabbedPane tabbedPane;
     private JList<Channel> roomList;
     private JList<Channel> userList;
+    private JPanel roomsTab;
     private ChatPanel chatPanel;
 
     public ChannelPanel() {
@@ -52,6 +55,43 @@ public class ChannelPanel {
                 }
             }
         });
+
+        SocketUtil.onReceive(message -> {
+            if (message.getCommand() == Command.WHISPER) {
+                Channel current = chatPanel.getChannel();
+                String from = message.getPayload().split(" ", 2)[0];
+                if (!current.getName().equals(from)) {
+                    Channel channel = getChannelFromUsername(from);
+                    if (channel != null) {
+                        channel.addMessage(message);
+                        channel.addNotification();
+                        userList.repaint();
+                    }
+                }
+            } else if (message.getCommand() == Command.BROADCAST) {
+                Channel main = rooms.firstElement();
+                if (chatPanel.getChannel() != main) {
+                    main.addMessage(message);
+                    main.addNotification();
+                    roomList.repaint();
+                }
+            }
+        });
+
+        /*
+         * [tab] [tab]
+         * tab : JPanel -> JLabel
+         */
+    }
+
+    public Channel getChannelFromUsername(String username) {
+        for (int i = 0; i < users.getSize(); i++) {
+            Channel channel = users.get(i);
+            if (channel.getName().equals(username)) {
+                return channel;
+            }
+        }
+        return null;
     }
 
     public void setChatPanel(ChatPanel chatPanel) {

@@ -21,7 +21,7 @@ public class Room {
 
     public void join(SocketProcess client) {
         clients.add(client);
-        broadcast(new Message(Command.JOINED, client.getUsername() + " joined " + roomName));
+        broadcast(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
     }
 
     public void leave(SocketProcess client) {

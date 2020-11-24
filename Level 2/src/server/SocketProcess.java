@@ -259,7 +259,7 @@ public class SocketProcess implements Runnable {
 
                     sendMessage(Command.LOGGED_IN, "Logged in as " + username);
 
-                    Message message = new Message(Command.JOINED, username);
+                    Message message = new Message(Command.JOINED_SERVER, username);
                     for (SocketProcess client : clients) {
                         client.sendMessage(message);
                     }
