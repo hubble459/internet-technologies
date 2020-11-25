@@ -96,12 +96,9 @@ public class SocketProcess implements Runnable {
     private void handleMessage(Message message) {
         String payload = message.getPayload();
 
-        // joost eskdgkjfwnke wefvg rwfng
-        // part[0]
-        //
         switch (message.getCommand()) {
             case WHISPER:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     String[] split = payload.split(" ");
                     if (payload.isEmpty() || split.length <= 1) {
                         // Empty line is an unknown command
@@ -112,121 +109,98 @@ public class SocketProcess implements Runnable {
 
                         privateMessage(username, msg);
                     }
-                } else{
-                    notLoggedIn();
                 }
                 break;
             case VOTE_KICK:
-                if (loggedIn) {
-                    if (room != null) {
-                        SocketProcess user = getUserFromUsername(payload);
-                        if (user != null) {
-                            room.addKickRequest(user);
-                        } else {
-                            sendMessage(Command.UNKNOWN, "No user with this username found");
-                        }
-                    } else {
-                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
-                    }
-                } else {
-                    notLoggedIn();
+                if (ensureLoggedIn() && ensureInRoom()) {
+                    room.startKick();
                 }
                 break;
-            case VOTE_KICK_TRUE:
-                if (loggedIn) {
-                    if (room != null) {
-                        SocketProcess user = getUserFromUsername(payload);
-                        if (user != null) {
-                            room.voteFor(user, true);
-                        } else {
-                            sendMessage(Command.UNKNOWN, "No user with this username found");
-                        }
+            case VOTE_KICK_USER:
+                if (ensureLoggedIn() && ensureInRoom()) {
+                    SocketProcess user = getUserFromUsername(payload);
+                    if (user != null) {
+                        room.voteFor(user);
                     } else {
-                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+                        sendMessage(Command.UNKNOWN, "No user with this username found");
                     }
-                } else {
-                    notLoggedIn();
                 }
                 break;
-            case VOTE_KICK_FALSE:
-                if (loggedIn) {
-                    if (room != null) {
-
-                        SocketProcess user = getUserFromUsername(payload);
-                        if (user != null) {
-                            room.voteFor(user, false);
-                        } else
-                            sendMessage(Command.UNKNOWN, "No user with this username found");
-                    } else {
-                        sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
-                    }
-                } else {
-                    notLoggedIn();
+            case VOTE_SKIP:
+                if (ensureLoggedIn() && ensureInRoom()) {
+                    room.voteSkip();
                 }
                 break;
             case LOGIN:
                 login(payload);
                 break;
             case USERS:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     sendUsers();
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case ROOMS:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     sendRooms();
-                } else {
-                    notLoggedIn();
+                }
+                break;
+            case ROOM:
+                if (ensureLoggedIn() && ensureInRoom()) {
+                    sendUsersInRoom();
                 }
                 break;
             case CREATE_ROOM:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     createRoom(message);
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case JOIN_ROOM:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     joinRoom(message);
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case LEAVE_ROOM:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     leaveRoom();
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case BROADCAST_IN_ROOM:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     talkInRoom(message);
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case QUIT:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     sendMessage(Command.QUITED, "Quit successfully");
-                    connected = false;
-                } else {
-                    notLoggedIn();
+                    disconnected();
                 }
                 break;
             case BROADCAST:
-                if (loggedIn) {
+                if (ensureLoggedIn()) {
                     broadcast(message);
-                } else {
-                    notLoggedIn();
                 }
                 break;
             case PONG:
                 ponged = true;
                 break;
+        }
+    }
+
+    private boolean ensureLoggedIn() {
+        if (loggedIn) {
+            return true;
+        } else {
+            sendMessage(Command.NOT_LOGGED_IN, "Please log in first");
+            return false;
+        }
+    }
+
+    private boolean ensureInRoom() {
+        if (room != null) {
+            return true;
+        } else {
+            sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+            return false;
         }
     }
 
@@ -241,7 +215,7 @@ public class SocketProcess implements Runnable {
 
     private void privateMessage(String username, String message) {
         SocketProcess user = getUserFromUsername(username);
-        if (user != null){
+        if (user != null) {
             Message msg = new Message(Command.WHISPER, this.username + " " + message);
             user.sendMessage(msg);
             sendMessage(msg);
@@ -259,7 +233,7 @@ public class SocketProcess implements Runnable {
 
                     sendMessage(Command.LOGGED_IN, "Logged in as " + username);
 
-                    Message message = new Message(Command.JOINED_SERVER, username);
+                    Message message = new Message(Command.JOINED_SERVER, username + " joined the server");
                     for (SocketProcess client : clients) {
                         client.sendMessage(message);
                     }
@@ -286,10 +260,6 @@ public class SocketProcess implements Runnable {
             }
         }
         return false;
-    }
-
-    private void notLoggedIn() {
-        sendMessage(Command.NOT_LOGGED_IN, "Please log in first");
     }
 
     public void sendMessage(Command command, String payload) {
@@ -328,8 +298,12 @@ public class SocketProcess implements Runnable {
     }
 
     public void disconnected() {
-        broadcast(new Message(Command.LEFT, "left :("));
+        broadcast(new Message(Command.LEFT, username + " left"));
+        if (room != null) {
+            room.leave(this);
+        }
         clients.remove(this);
+        connected = false;
     }
 
     public void sendUsers() {
@@ -356,6 +330,20 @@ public class SocketProcess implements Runnable {
         }
 
         sendMessage(Command.ROOMS, roomList.toString());
+    }
+
+    public void sendUsersInRoom() {
+        if (room == null) return;
+
+        StringBuilder usersList = new StringBuilder();
+        for (SocketProcess client : room.getClients()) {
+            usersList.append(client.getUsername()).append(";");
+        }
+        if (usersList.length() > 0) {
+            usersList.deleteCharAt(usersList.length() - 1);
+        }
+
+        sendMessage(Command.ROOM, usersList.toString());
     }
 
     public void joinRoom(Message message) {
@@ -412,17 +400,20 @@ public class SocketProcess implements Runnable {
             if (roomName.matches("\\w{3,14}")) {
                 Room room = new Room(message.getPayload());
                 rooms.add(room);
-                sendMessage(Command.ROOM_CREATED, room.toString());
+                Message roomCreated = new Message(Command.ROOM_CREATED, room.toString());
+                for (SocketProcess client : clients) {
+                    client.sendMessage(roomCreated);
+                }
             } else {
                 sendMessage(Command.INVALID_FORMAT, "Room name should be between 3 and 14 characters, and should match [a-zA-Z_0-9]");
             }
-        }else {
+        } else {
             sendMessage(Command.ROOM_NAME_EXIST, "Room with name " + roomName + " already exists");
         }
     }
 
     private boolean roomNameExists(String roomName) {
-        for (Room room: rooms) {
+        for (Room room : rooms) {
             if (room.getRoomName().equals(roomName)) {
                 return true;
             }
@@ -444,6 +435,10 @@ public class SocketProcess implements Runnable {
         if (!isInRoom) {
             sendMessage(Command.NOT_IN_A_ROOM, "You're not in a room!");
         }
+    }
+
+    public void clearRoom() {
+        this.room = null;
     }
 
     public void broadcast(Message message) {

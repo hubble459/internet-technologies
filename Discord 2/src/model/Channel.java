@@ -1,6 +1,6 @@
 package model;
 
-import util.SocketUtil;
+import util.ServerUtil;
 
 import java.util.ArrayList;
 
@@ -26,9 +26,9 @@ public class Channel {
 
     public void send(String message) {
         if (isPM()) {
-            SocketUtil.send(command, name + " " + message);
+            ServerUtil.send(command, name + " " + message);
         } else {
-            SocketUtil.send(command, message);
+            ServerUtil.send(command, message);
         }
     }
 

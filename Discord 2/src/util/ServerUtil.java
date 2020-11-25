@@ -8,9 +8,9 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class SocketUtil {
+public class ServerUtil {
     public static final int DEFAULT_PORT = 1337;
-    private static final SocketUtil instance = new SocketUtil();
+    private static final ServerUtil instance = new ServerUtil();
     private final ArrayList<OnReceive> onReceiveHandlers;
     private final ArrayList<AfterLogin> afterLoginListeners;
     private Socket socket;
@@ -46,12 +46,12 @@ public class SocketUtil {
     private String username;
     private boolean loggedIn;
 
-    private SocketUtil() {
+    private ServerUtil() {
         onReceiveHandlers = new ArrayList<>();
         afterLoginListeners = new ArrayList<>();
     }
 
-    public static SocketUtil getInstance() {
+    public static ServerUtil getInstance() {
         return instance;
     }
 
@@ -101,7 +101,7 @@ public class SocketUtil {
             e.printStackTrace();
         }
 
-        OnReceive onReceive = new OnReceive() {
+        instance.onReceiveHandlers.add(new OnReceive() {
             @Override
             public void received(Message message) {
                 if (message.getCommand() == Command.INFO) {
@@ -114,8 +114,7 @@ public class SocketUtil {
                     login();
                 }
             }
-        };
-        instance.onReceiveHandlers.add(onReceive);
+        });
 
         new Thread(instance.inputReader).start();
     }
@@ -138,6 +137,10 @@ public class SocketUtil {
         for (AfterLogin afterLoginListener : new ArrayList<>(instance.afterLoginListeners)) {
             afterLoginListener.loggedIn(instance.username);
         }
+    }
+
+    public static void send(Command command) {
+        send(new Message(command, ""));
     }
 
     public static void send(Command command, String message) {

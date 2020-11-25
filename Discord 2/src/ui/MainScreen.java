@@ -3,10 +3,11 @@ package ui;
 import model.Channel;
 import model.Command;
 import model.Message;
-import util.SocketUtil;
+import util.ServerUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class MainScreen extends JFrame {
     private JPanel mainPanel;
@@ -27,18 +28,18 @@ public class MainScreen extends JFrame {
 
         channelPanel.setChatPanel(chatPanel);
 
-        SocketUtil.connect();
+        ServerUtil.connect();
 
-        SocketUtil.afterLogin(new SocketUtil.AfterLogin() {
+        ServerUtil.afterLogin(new ServerUtil.AfterLogin() {
             @Override
             public void loggedIn(String username) {
-                SocketUtil.send(Command.ROOMS, "");
+                ServerUtil.send(Command.ROOMS);
                 askedForRooms = true;
-                SocketUtil.removeAfterLogin(this);
+                ServerUtil.removeAfterLogin(this);
             }
         });
 
-        SocketUtil.onReceive(new SocketUtil.OnReceive() {
+        ServerUtil.onReceive(new ServerUtil.OnReceive() {
             @Override
             public void received(Message message) {
                 if (askedForRooms && message.getCommand() == Command.ROOMS) {
@@ -48,22 +49,24 @@ public class MainScreen extends JFrame {
                         for (String roomName : roomNames) {
                             channelPanel.addRoom(new Channel(roomName, Channel.ChannelType.ROOM));
                         }
-                        SocketUtil.send(Command.USERS, "");
+                        ServerUtil.send(Command.USERS);
                     }
                 } else if (askedForRooms && message.getCommand() == Command.UNKNOWN) {
-                    SocketUtil.removeOnReceive(this);
+                    ServerUtil.removeOnReceive(this);
                 } else if (askedForRooms && message.getCommand() == Command.USERS) {
                     String users = message.getPayload();
                     if (!users.isEmpty()) {
                         String[] usernames = users.split(";");
                         for (String username : usernames) {
-                            if (!username.equals(SocketUtil.getUsername())) {
+                            if (!username.equals(ServerUtil.getUsername())) {
                                 channelPanel.addUser(new Channel(username, Channel.ChannelType.PM));
                             }
                         }
                     }
                 } else if (askedForRooms && message.getCommand() == Command.JOINED_SERVER) {
                     channelPanel.addUser(new Channel(message.getPayload(), Channel.ChannelType.PM));
+                } else if (askedForRooms && message.getCommand() == Command.ROOM_CREATED) {
+                    channelPanel.addRoom(new Channel(message.getPayload(), Channel.ChannelType.ROOM));
                 }
             }
         });
@@ -73,12 +76,29 @@ public class MainScreen extends JFrame {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu options = new JMenu("Options");
+        options.setMnemonic(KeyEvent.VK_O);
 
         options.add("Close");
         options.add("Logout");
         options.add("Help");
 
         menuBar.add(options);
+
+        JMenuItem createRoom = new JMenuItem("Add Room");
+        createRoom.setMnemonic(KeyEvent.VK_R);
+
+        createRoom.addActionListener(e -> {
+            String roomName = JOptionPane.showInputDialog(null, "Room name (3 ~ 14 chars, only characters, numbers and underscore)");
+            if (roomName != null) {
+                roomName = roomName.strip();
+                if (roomName.matches("\\w{3,14}") && !roomName.equals("Main")) {
+                    ServerUtil.send(Command.CREATE_ROOM, roomName);
+                }
+            }
+            createRoom.setSelected(false);
+        });
+
+        menuBar.add(createRoom);
 
         setJMenuBar(menuBar);
     }

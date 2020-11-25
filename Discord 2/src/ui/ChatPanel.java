@@ -1,8 +1,10 @@
 package ui;
 
 import model.Channel;
+import model.Command;
+import model.DisabledItemSelectionModel;
 import model.Message;
-import util.SocketUtil;
+import util.ServerUtil;
 
 import javax.swing.*;
 
@@ -16,15 +18,22 @@ public class ChatPanel {
 
     public ChatPanel() {
         messages = new DefaultListModel<>();
+        messageList.setSelectionModel(new DisabledItemSelectionModel());
         messageList.setModel(messages);
 
-        SocketUtil.onReceive(message -> {
+        ServerUtil.onReceive(message -> {
             if (channel.getCommand() == message.getCommand()) {
                 channel.addMessage(message);
                 SwingUtilities.invokeLater(() -> {
                     messages.addElement(message);
                     messageList.ensureIndexIsVisible(messages.getSize() - 1);
                 });
+            } else if (message.getCommand() == Command.VOTE_KICK) {
+                // KICK STARTED
+                KickPanel dialog = new KickPanel();
+                dialog.pack();
+                dialog.setLocationRelativeTo(null);
+                dialog.setVisible(true);
             }
         });
 
@@ -35,8 +44,12 @@ public class ChatPanel {
     public void sendFromTextField() {
         String text = textField.getText();
         if (text != null && !text.isEmpty()) {
-            channel.send(text);
-            textField.setText("");
+            if (text.toLowerCase().startsWith("/kick")) {
+                ServerUtil.send(Command.VOTE_KICK);
+            } else {
+                channel.send(text);
+                textField.setText("");
+            }
         }
     }
 
