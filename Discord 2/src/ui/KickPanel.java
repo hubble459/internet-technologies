@@ -16,6 +16,7 @@ import java.util.function.BiConsumer;
 public class KickPanel extends JDialog implements ServerUtil.OnReceive {
     private JPanel contentPane;
     private JButton buttonCancel;
+    private JList list1;
     private JPanel tablePanel;
     private final HashMap<String, Integer> users;
 

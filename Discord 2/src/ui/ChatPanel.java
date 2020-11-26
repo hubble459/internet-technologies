@@ -64,5 +64,6 @@ public class ChatPanel {
             messages.clear();
             messages.addAll(channel.getMessages());
         });
+
     }
 }
