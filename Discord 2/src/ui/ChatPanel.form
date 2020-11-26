@@ -21,7 +21,9 @@
         <children>
           <component id="243b" class="javax.swing.JList" binding="messageList" default-binding="true">
             <constraints/>
-            <properties/>
+            <properties>
+              <selectionMode value="0"/>
+            </properties>
           </component>
         </children>
       </scrollpane>

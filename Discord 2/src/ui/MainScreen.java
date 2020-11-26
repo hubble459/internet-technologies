@@ -64,7 +64,7 @@ public class MainScreen extends JFrame {
                         }
                     }
                 } else if (askedForRooms && message.getCommand() == Command.JOINED_SERVER) {
-                    channelPanel.addUser(new Channel(message.getPayload(), Channel.ChannelType.PM));
+                    channelPanel.addUser(new Channel(message.getPayload().split(" ", 2)[0], Channel.ChannelType.PM));
                 } else if (askedForRooms && message.getCommand() == Command.ROOM_CREATED) {
                     channelPanel.addRoom(new Channel(message.getPayload(), Channel.ChannelType.ROOM));
                 }

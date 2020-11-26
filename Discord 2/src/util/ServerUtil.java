@@ -111,6 +111,7 @@ public class ServerUtil {
                     postLogin();
                     instance.onReceiveHandlers.remove(this);
                 } else if (!instance.loggedIn) {
+                    JOptionPane.showMessageDialog(null, message.getPayload(), "Error", JOptionPane.ERROR_MESSAGE);
                     login();
                 }
             }
