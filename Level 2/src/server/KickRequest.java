@@ -37,7 +37,7 @@ public class KickRequest {
     public void kick(boolean force) {
         int count = votes();
 
-        if (count == room.size() || force) {
+        if (count >= room.size() || force) {
             SocketProcess user = getHighestVotedFor();
 
             for (SocketProcess socketProcess : votes.keySet()) {
@@ -95,6 +95,7 @@ public class KickRequest {
 
     public void skip() {
         skips++;
+        room.broadcastInRoom(new Message(Command.VOTED, this.toString()));
         kick(false);
     }
 }
