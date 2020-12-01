@@ -383,6 +383,7 @@ public class SocketProcess implements Runnable {
             sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
         } else if (current != null) {
             if (current == room) {
+                sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
                 return;
             }
             current.leave(this);

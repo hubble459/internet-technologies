@@ -29,6 +29,7 @@ public enum Command {
     KICK_ALREADY_REQUESTED("407"),
     KICK_REQUEST_TIMED_OUT("408"),
     NO_MESSAGE("409"),
+    ALREADY_IN_ROOM("410"),
     LOGGED_IN("200"),
     QUITED("201"),
     KICKED("202"),
