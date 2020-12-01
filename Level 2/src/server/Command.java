@@ -36,6 +36,7 @@ public enum Command {
     QUITED("201"),
     KICKED("202"),
     VOTED("207"),
+    NO_ONE_WAS_KICKED("208"),
     ROOM_CREATED("203"),
     JOINED_SERVER("204"),
     JOINED_ROOM("206"),

@@ -47,7 +47,7 @@ public class KickRequest {
             if (user != null) {
                 room.kick(user);
             } else {
-                room.broadcastInRoom(new Message(Command.KICKED, "No one was kicked"));
+                room.broadcastInRoom(new Message(Command.NO_ONE_WAS_KICKED, "No one was kicked"));
             }
             timer.cancel();
             room.removeKickRequest();

@@ -14,9 +14,14 @@ e = Server to everyone
 o = Server to everyone but you (Others)
 r = Server to everyone in the room
 
-Status codes:
-2xx = Positive
-4xx = Error
+#### Status codes:
+- 2xx = Positief
+- 4xx = Error
+
+#### Response:
+Alle responses van de server op een commando is een Status Code.
+
+Alle mededelingen zijn woorden
 
 # Login
 Om in te loggen moet je een `CONN [username]` bericht sturen.
@@ -43,9 +48,10 @@ s: 402 Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]
 # Bericht Versturen
 Als je een bericht naar iedereen op de server wilt versturen dan gebruik je `BCST`.
 
-### Happy Flow
+### Happy Flow TODO
 ```shell script
 c: BCST Hello World
+s: 200 Message send
 e: BCST Quentin Hello World
 ```
 
@@ -56,13 +62,13 @@ c: BCST
 s: 409 Please give a message to send
 ```
 
-# Make Room
+# Maak een Groep
 Maak een room met het `MAKE` commando.
 
 ### Happy Flow
 ```shell script
 c: MAKE my_first_room
-e: 203 my_first_room
+e: MADE my_first_room
 ```
 
 ### Sad Flow
@@ -71,20 +77,26 @@ c: MAKE [name that does not match requirements or no name]
 s: 402 Room name should be between 3 and 14 characters and should match [a-zA-Z_0-9]
 ```
 
+```shell script
+c: MAKE [with name that already exists]
+s: 405 Room with name room_bestaat_al already exists
+```
+
 # List Rooms
 ### Happy Flow
 De room namen zijn gescheiden door punt-comma's,
 daarom mag je geen room aanmaken met een punt-comma in de naam.
-
+# todo 200 response
 ```shell script
 c: ROOMS [should be empty, but doesnt matter]
-s: ROOMS owo;swag;shrek;my_first_room
+s: 200 owo;swag;shrek;my_first_room
 ```
-Wanneer er geen rooms zijn word er niets terug gestuurd:
+Wanneer er geen rooms zijn wordt er een lege 200 terug gestuurd:
 ```shell script
 c: ROOMS
-s: ROOMS
+s: 200
 ```
+
 ### Sad Flows
 There's nothing sad about rooms
 
@@ -95,7 +107,7 @@ Zie [leave room](#leave-room) voor details.
 ### Happy Flow
 ```shell script
 c: JOIN my_first_room
-r: Quentin joined my_first_room
+r: JOINED Quentin joined my_first_room
 ```
 
 ### Sad Flow
@@ -108,7 +120,7 @@ s: 400 Room with name 'room_bestaat_niet' does not exist!
 ### Happy Flow
 ```shell script
 c: LEAVE
-r: 205 Quentin left my_first_room
+r: LEFT Quentin left my_first_room
 ```
 
 ### Sad Flow
@@ -125,6 +137,7 @@ Om in een room te praten gebruik je het `TALK` commando.
 
 ```shell script
 c: TALK Hello World!
+s: 200
 r: TALK Quentin Hello World!
 ```
 
@@ -141,7 +154,7 @@ c: TALK Hallo
 s: 404 You haven't joined a room to talk in
 ```
 
-# Gebruikers in een room
+# Gebruikers in een Room
 Je kunt alle gebruikers van een room krijgen door het `ROOM` commando te gebruiken.
 
 ### Happy Flow
@@ -149,7 +162,7 @@ In dit geval zitten wij in `my_first_room`.
 Net als in [ROOMS](#list-rooms) zijn de namen gescheiden met een punt-comma.
 ```shell script
 c: ROOM
-s: ROOM Quentin;Joost
+s: 200 Quentin;Joost
  ```
 
 ### Sad Flow
@@ -167,14 +180,19 @@ Je kunt ook op jezelf stemmen.
 In dit geval zitten wij weer in `my_first_room`.
 ```shell script
 c: KICK
+s:
 r: KICK Vote kick started
 ```
 
 Na 30 seconden stopt de kick automatisch en wordt degene met de meeste stemmen gekicked.
 Of niemand als de stemmen gelijk zijn.
 ```shell script
-r: 202 No one was kicked
+r: KRES 0 No one was kicked
+of
+r: KRES 1 [naam]
 ```
+
+Als iedereen ... ook.
 
 ### Sad Flow
 Er is al een emergency meeting gestart.
@@ -195,12 +213,31 @@ In dit geval zitten wij weer in `my_first_room`.
 De gebruikers in deze room zijn Quentin en Joost.
 ```shell script
 c: VOTE Joost
-s: 207 Joost 1
+s: VOTES Joost 1; Quentin 0
+# Nu ingelogt als Joost
+c: VOTE Quentin
+r: VOTES Joost 1; Quentin 1
+r: KRES 0 No one was kicked
+```
+
+```shell script
+c: VOTE Joost
+r: VOTES Joost 1; Quentin 0
+# Nu ingelogt als Joost
+c: VOTE Joost
+r: VOTES Joost 2; Quentin 0
+r: KRES 1 Joost was kicked ówò
 ```
 
 ### Sad Flow
 Niet in een room.
 ```shell script
 c: VOTE Joost
+s: 404 Join a room first
 ```
 
+Vote persoon wie niet in de room zit.
+```
+c: VOTE unknown_user
+s: 400 No user with this username found
+```
