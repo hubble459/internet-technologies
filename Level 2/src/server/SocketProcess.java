@@ -165,7 +165,7 @@ public class SocketProcess implements Runnable {
                 }
                 break;
             case BROADCAST_IN_ROOM:
-                if (ensureLoggedIn()) {
+                if (ensureLoggedIn() && ensureMessageGiven(message)) {
                     talkInRoom(message);
                 }
                 break;
@@ -176,13 +176,22 @@ public class SocketProcess implements Runnable {
                 }
                 break;
             case BROADCAST:
-                if (ensureLoggedIn()) {
+                if (ensureLoggedIn() && ensureMessageGiven(message)) {
                     broadcast(message);
                 }
                 break;
             case PONG:
                 ponged = true;
                 break;
+        }
+    }
+
+    private boolean ensureMessageGiven(Message message) {
+        if (message.getPayload().isEmpty()) {
+            sendMessage(Command.NO_MESSAGE, "Please give a message to send");
+            return false;
+        } else {
+            return true;
         }
     }
 

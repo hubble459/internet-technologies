@@ -10,9 +10,9 @@ public class NetCat {
     private static PrintWriter writer;
 
     public static void main(String[] args) throws IOException {
-        socket = new Socket("127.0.0.1", 1337);
-//        socket = new Socket("86.87.206.20", 1337);
-//        socket = new Socket("64.227.68.106", 1337);
+//        socket = new Socket("127.0.0.1", 1337);
+       socket = new Socket("86.87.206.20", 1338);
+ //        socket = new Socket("64.227.68.106", 1337);
         writer = new PrintWriter(socket.getOutputStream());
 
         new Thread(new inputReader()).start();
