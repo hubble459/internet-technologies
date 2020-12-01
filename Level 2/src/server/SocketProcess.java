@@ -102,7 +102,7 @@ public class SocketProcess implements Runnable {
                     String[] split = payload.split(" ");
                     if (payload.isEmpty() || split.length <= 1) {
                         // Empty line is an unknown command
-                        sendMessage(Command.UNKNOWN, "No username/message given");
+                        sendMessage(Command.NO_MESSAGE, "No username/message given");
                     } else {
                         String username = split[0];
                         String msg = payload.substring(username.length() + 1);
@@ -371,7 +371,6 @@ public class SocketProcess implements Runnable {
 
                 if (room.getRoomName().equals(roomName)) {
                     this.room = room;
-                    room.join(this);
                     exist = true;
 
                     if (current != null) {
@@ -383,8 +382,12 @@ public class SocketProcess implements Runnable {
         if (!exist) {
             sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
         } else if (current != null) {
+            if (current == room) {
+                return;
+            }
             current.leave(this);
         }
+        room.join(this);
     }
 
     public void talkInRoom(Message message) {
