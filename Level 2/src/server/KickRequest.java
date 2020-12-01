@@ -27,7 +27,7 @@ public class KickRequest {
         votes.putIfAbsent(user, 0);
         votes.computeIfPresent(user, (s, integer) -> integer + 1);
 
-        room.broadcast(new Message(Command.VOTE_KICK, this.toString()));
+        room.broadcast(new Message(Command.VOTED, this.toString()));
         kick(false);
     }
 

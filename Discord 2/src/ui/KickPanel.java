@@ -74,7 +74,7 @@ public class KickPanel extends JDialog implements ServerUtil.OnReceive {
             case KICKED:
                 exit();
                 break;
-            case VOTE_KICK:
+            case VOTED:
                 String[] data = message.getPayload().split(" ", 2);
                 String username = data[0];
                 int votes = Integer.parseInt(data[1]);

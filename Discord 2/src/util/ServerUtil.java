@@ -73,7 +73,8 @@ public class ServerUtil {
 
     public static void connect() {
         do {
-            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "127.0.0.1:" + DEFAULT_PORT);
+//            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "127.0.0.1:" + DEFAULT_PORT);
+            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "86.87.206.20:" + DEFAULT_PORT);
             if (ip == null /* Canceled */) {
                 cancel();
                 return;

@@ -21,12 +21,17 @@ public class ChatPanel {
         messages = new DefaultListModel<>();
         messageList.setSelectionModel(new DisabledItemSelectionModel());
         messageList.setModel(messages);
-//        MyCellRenderer cellRenderer = new MyCellRenderer(275);
-//        messageList.setCellRenderer(cellRenderer);
+        MyCellRenderer cellRenderer = new MyCellRenderer(275);
+        messageList.setCellRenderer(cellRenderer);
 
         ServerUtil.onReceive(message -> {
-            if (channel.getCommand() == message.getCommand()) {
-                channel.addMessage(message);
+            if (channel.getCommand() == message.getCommand()
+                    || message.getCommand() == Command.JOINED_ROOM
+                    || (channel.getName().equals("Main")
+                    && message.getCommand() == Command.JOINED_SERVER)) {
+                if (message.getCommand() != Command.JOINED_ROOM && message.getCommand() != Command.JOINED_SERVER) {
+                    channel.addMessage(message);
+                }
                 SwingUtilities.invokeLater(() -> {
                     messages.addElement(message);
                     messageList.ensureIndexIsVisible(messages.getSize() - 1);
@@ -37,6 +42,7 @@ public class ChatPanel {
                 dialog.pack();
                 dialog.setLocationRelativeTo(null);
                 dialog.setVisible(true);
+                SwingUtilities.invokeLater(() -> textField.setText(""));
             }
         });
 

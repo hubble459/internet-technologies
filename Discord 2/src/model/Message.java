@@ -35,16 +35,26 @@ public class Message {
 
     @Override
     public String toString() {
-        if (command == Command.BROADCAST || command == Command.BROADCAST_IN_ROOM || command == Command.WHISPER) {
+        if (command == Command.BROADCAST
+                || command == Command.BROADCAST_IN_ROOM
+                || command == Command.WHISPER
+                || command == Command.JOINED_SERVER
+                || command == Command.JOINED_ROOM) {
+            String payload = this.payload;
+            if (command == Command.JOINED_SERVER
+                    || command == Command.JOINED_ROOM) {
+                payload = "SERVER " + payload;
+            }
+
             String[] split = payload.split(" ", 2);
             String username = split[0];
-            StringBuilder message = new StringBuilder();
+            String message = "";
             if (split.length > 1) {
-                message = new StringBuilder(split[1]);
+                message = split[1];
             }
 
             String color = username.equals(ServerUtil.getUsername()) ? "blue" : "black";
-            System.out.println(color);
+            if (username.equals("SERVER")) color = "red";
             return "<html><body style='width: 300px'><strong style='color: " + color + "'>" + username + "</strong><br/>" + message + "</body></html>";
         } else {
             return command + " " + payload;

@@ -70,13 +70,20 @@ public class ChannelPanel {
                         refreshTabNotificationCount();
                     }
                 }
-            } else if (message.getCommand() == Command.BROADCAST) {
+            } else if (message.getCommand() == Command.BROADCAST
+                    || message.getCommand() == Command.JOINED_SERVER) {
                 Channel main = rooms.firstElement();
                 if (chatPanel.getChannel() != main) {
                     main.addMessage(message);
                     main.addNotification();
                     roomList.repaint();
                     refreshTabNotificationCount();
+                }
+            }else if (message.getCommand() == Command.KICKED) {
+                String username = message.getPayload().split(" ", 2)[0];
+                if (ServerUtil.getUsername().equals(username)) {
+                    JOptionPane.showMessageDialog(null, "You were kicked from the chat!", "KICKED", JOptionPane.ERROR_MESSAGE);
+                    gotoMain();
                 }
             }
         });
@@ -120,6 +127,10 @@ public class ChannelPanel {
             }
         }
         return null;
+    }
+
+    public void gotoMain() {
+        roomList.setSelectedIndex(0);
     }
 
     public void setChatPanel(ChatPanel chatPanel) {
