@@ -13,6 +13,7 @@ public class SocketProcess implements Runnable {
     private boolean connected;
     private boolean loggedIn;
     private boolean ponged;
+    private boolean voted;
     private Room room;
     private OnLoginListener onLoginListener;
     private String username;
@@ -117,9 +118,10 @@ public class SocketProcess implements Runnable {
                 }
                 break;
             case VOTE_KICK_USER:
-                if (ensureLoggedIn() && ensureInRoom()) {
+                if (ensureLoggedIn() && ensureInRoom() && ensureNotVoted()) {
                     SocketProcess user = getUserFromUsername(payload);
                     if (user != null) {
+                        voted = true;
                         room.voteFor(user);
                     } else {
                         sendMessage(Command.UNKNOWN, "No user with this username found");
@@ -127,7 +129,8 @@ public class SocketProcess implements Runnable {
                 }
                 break;
             case VOTE_SKIP:
-                if (ensureLoggedIn() && ensureInRoom()) {
+                if (ensureLoggedIn() && ensureInRoom() && ensureNotVoted()) {
+                    voted = true;
                     room.voteSkip();
                 }
                 break;
@@ -184,6 +187,19 @@ public class SocketProcess implements Runnable {
                 ponged = true;
                 break;
         }
+    }
+
+    private boolean ensureNotVoted() {
+        if (voted) {
+            sendMessage(Command.ALREADY_VOTED, "You have already voted");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void setVoted(boolean voted) {
+        this.voted = voted;
     }
 
     private boolean ensureMessageGiven(Message message) {
@@ -396,7 +412,7 @@ public class SocketProcess implements Runnable {
         boolean inRoom = false;
         for (Room room : rooms) {
             if (room.contains(this)) {
-                room.broadcast(message);
+                room.broadcastInRoom(message);
                 inRoom = true;
                 break;
             }

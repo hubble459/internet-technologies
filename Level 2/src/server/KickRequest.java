@@ -13,6 +13,9 @@ public class KickRequest {
     public KickRequest(Room room) {
         this.room = room;
         this.votes = new HashMap<>();
+        for (SocketProcess client : room.getClients()) {
+            votes.putIfAbsent(client, 0);
+        }
 
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -27,7 +30,7 @@ public class KickRequest {
         votes.putIfAbsent(user, 0);
         votes.computeIfPresent(user, (s, integer) -> integer + 1);
 
-        room.broadcast(new Message(Command.VOTED, this.toString()));
+        room.broadcastInRoom(new Message(Command.VOTED, this.toString()));
         kick(false);
     }
 
@@ -37,10 +40,14 @@ public class KickRequest {
         if (count == room.size() || force) {
             SocketProcess user = getHighestVotedFor();
 
+            for (SocketProcess socketProcess : votes.keySet()) {
+                socketProcess.setVoted(false);
+            }
+
             if (user != null) {
                 room.kick(user);
             } else {
-                room.broadcast(new Message(Command.KICKED, "No one was kicked"));
+                room.broadcastInRoom(new Message(Command.KICKED, "No one was kicked"));
             }
             timer.cancel();
             room.removeKickRequest();

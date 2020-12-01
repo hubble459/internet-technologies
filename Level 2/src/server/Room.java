@@ -12,7 +12,7 @@ public class Room {
         this.clients = new ArrayList<>();
     }
 
-    public void broadcast(Message message) {
+    public void broadcastInRoom(Message message) {
         for (SocketProcess client : clients) {
             client.sendMessage(message);
         }
@@ -20,20 +20,20 @@ public class Room {
 
     public void join(SocketProcess client) {
         clients.add(client);
-        broadcast(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
+        broadcastInRoom(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
     }
 
     public void leave(SocketProcess client) {
-        broadcast(new Message(Command.LEFT, client.getUsername() + " left " + roomName));
+        broadcastInRoom(new Message(Command.LEFT, client.getUsername() + " left " + roomName));
         removeClient(client);
     }
 
     public void kick(SocketProcess client) {
         if (clients.contains(client)) {
-            broadcast(new Message(Command.KICKED, client.getUsername() + " was kicked ówò"));
+            broadcastInRoom(new Message(Command.KICKED, client.getUsername() + " was kicked ówò"));
             removeClient(client);
         } else {
-            broadcast(new Message(Command.KICKED, client.getUsername() + " already left the room ówò"));
+            broadcastInRoom(new Message(Command.KICKED, client.getUsername() + " already left the room ówò"));
         }
     }
 
@@ -51,6 +51,7 @@ public class Room {
     }
 
     public void removeKickRequest() {
+
         kickRequest = null;
     }
 
@@ -61,9 +62,9 @@ public class Room {
     public void startKick() {
         if (kickRequest == null) {
             kickRequest = new KickRequest(this);
-            broadcast(new Message(Command.VOTE_KICK, "Vote kick started"));
+            broadcastInRoom(new Message(Command.VOTE_KICK, "Vote kick started"));
         } else {
-            broadcast(new Message(Command.KICK_ALREADY_REQUESTED, "A kick has already been requested"));
+            broadcastInRoom(new Message(Command.KICK_ALREADY_REQUESTED, "A kick has already been requested"));
         }
     }
 
@@ -72,10 +73,10 @@ public class Room {
             if (clients.contains(user)) {
                 kickRequest.increment(user);
             } else {
-                broadcast(new Message(Command.UNKNOWN, "No user with this username found"));
+                broadcastInRoom(new Message(Command.UNKNOWN, "No user with this username found"));
             }
         } else {
-            broadcast(new Message(Command.BROADCAST, "Make a kick request first"));
+            broadcastInRoom(new Message(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first"));
         }
     }
 
@@ -83,7 +84,7 @@ public class Room {
         if (kickRequest != null) {
             kickRequest.skip();
         } else {
-            broadcast(new Message(Command.BROADCAST, "Make a kick request first"));
+            broadcastInRoom(new Message(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first"));
         }
     }
 

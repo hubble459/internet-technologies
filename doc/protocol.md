@@ -50,14 +50,14 @@ e: BCST Quentin Hello World
 ```
 
 ### Sad Flow
-No message
+Geen bericht
 ```shell script
 c: BCST
 s: 409 Please give a message to send
 ```
 
 # Make Room
-Make a room with the `MAKE` command.
+Maak een room met het `MAKE` commando.
 
 ### Happy Flow
 ```shell script
@@ -73,11 +73,14 @@ s: 402 Room name should be between 3 and 14 characters and should match [a-zA-Z_
 
 # List Rooms
 ### Happy Flow
+De room namen zijn gescheiden door punt-comma's,
+daarom mag je geen room aanmaken met een punt-comma in de naam.
+
 ```shell script
 c: ROOMS [should be empty, but doesnt matter]
 s: ROOMS owo;swag;shrek;my_first_room
 ```
-When there are no rooms:
+Wanneer er geen rooms zijn word er niets terug gestuurd:
 ```shell script
 c: ROOMS
 s: ROOMS
@@ -86,6 +89,8 @@ s: ROOMS
 There's nothing sad about rooms
 
 # Join Room
+Als je al in een room zit verlaat je deze automatisch.
+Zie [leave room](#leave-room) voor details.
 
 ### Happy Flow
 ```shell script
@@ -99,15 +104,103 @@ c: JOIN room_bestaat_niet
 s: 400 Room with name 'room_bestaat_niet' does not exist!
 ```
 
+# Leave Room
+### Happy Flow
+```shell script
+c: LEAVE
+r: 205 Quentin left my_first_room
+```
+
+### Sad Flow
+Als je niet in een room zit en je probeert deze te verlaten:
+```shell script
+c: LEAVE
+s: 404 You're not in a room
+```
+
 # Talk in Room
 Om in een room te praten gebruik je het `TALK` commando.
-
-
 
 ### Happy Flow
 
 ```shell script
-
+c: TALK Hello World!
+r: TALK Quentin Hello World!
 ```
 
+### Sad Flow
+Geen bericht meegegeven.
+```shell script
+c: TALK
+s: 409 Please give a message to send
+```
+
+Geen room gejoind.
+```shell script
+c: TALK Hallo
+s: 404 You haven't joined a room to talk in
+```
+
+# Gebruikers in een room
+Je kunt alle gebruikers van een room krijgen door het `ROOM` commando te gebruiken.
+
+### Happy Flow
+In dit geval zitten wij in `my_first_room`.
+Net als in [ROOMS](#list-rooms) zijn de namen gescheiden met een punt-comma.
+```shell script
+c: ROOM
+s: ROOM Quentin;Joost
+ ```
+
+### Sad Flow
+Nu zitten we niet in een room.
+```shell script
+c: ROOM
+s: 404 Join a room first
+```
+
+# Emergency Meeting (Vote Kicking)
+Als je een meeting start, kun je stemmen op iemand die in de groep zit.
+Je kunt ook op jezelf stemmen.
+
+### Happy Flow
+In dit geval zitten wij weer in `my_first_room`.
+```shell script
+c: KICK
+r: KICK Vote kick started
+```
+
+Na 30 seconden stopt de kick automatisch en wordt degene met de meeste stemmen gekicked.
+Of niemand als de stemmen gelijk zijn.
+```shell script
+r: 202 No one was kicked
+```
+
+### Sad Flow
+Er is al een emergency meeting gestart.
+```shell script
+c: KICK
+s: 407 A kick has already been requested
+```
+
+Je zit niet in een room.
+```shell script
+c: KICK
+s: 404 Join a room first
+```
+
+# Vote voor een Gebruiker
+### Happy Flow
+In dit geval zitten wij weer in `my_first_room`.
+De gebruikers in deze room zijn Quentin en Joost.
+```shell script
+c: VOTE Joost
+s: 207 Joost 1
+```
+
+### Sad Flow
+Niet in een room.
+```shell script
+c: VOTE Joost
+```
 
