@@ -387,6 +387,7 @@ public class SocketProcess implements Runnable {
 
                 if (room.getRoomName().equals(roomName)) {
                     this.room = room;
+
                     exist = true;
 
                     if (current != null) {
@@ -397,14 +398,17 @@ public class SocketProcess implements Runnable {
         }
         if (!exist) {
             sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
-        } else if (current != null) {
-            if (current == room) {
-                sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
-                return;
-            }
-            current.leave(this);
+        } else if (current == room) {
+            sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
+            return;
         }
-        room.join(this);
+
+        if (exist) {
+            room.join(this);
+            if (current != null) {
+                current.leave(this);
+            }
+        }
     }
 
     public void talkInRoom(Message message) {
