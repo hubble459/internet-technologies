@@ -1,7 +1,7 @@
 package server;
 
 public enum Command {
-    USERS("USERS"), // USRS (get the list of users)
+    USERS("USERS"), // USERS (get the list of users)
     ROOMS("ROOMS"), // ROOMS (get the list of rooms)
     ROOM("ROOM"), // ROOM (get the list of users in room)
     JOIN_ROOM("JOIN"), // JOIN <room_id> (to join)
@@ -17,8 +17,9 @@ public enum Command {
     BROADCAST("BCST"), // BCST <message> (to broadcast message)
     PONG("PONG"), // PONG (send pong to notify server)
     PING("PING"), // (ping message)
-    DISCONNECTED("DCST"), // DSCT?!
+    DISCONNECTED("DCST"), // Disconnected
     INFO("INFO"), // (info message)
+    KRICK_RESPONSE("KRES"), // KRES <type> <username>
     UNKNOWN("400"),
     ALREADY_LOGGED_IN("401"),
     INVALID_FORMAT("402"),
@@ -36,11 +37,15 @@ public enum Command {
     QUITED("201"),
     KICKED("202"),
     VOTED("207"),
+    ROOM_LIST("209"),
+    PEOPLE_IN_ROOM("210"),
+    VOTE_KICK_STARTED("211"),
     NO_ONE_WAS_KICKED("208"),
+    USER_LIST("212"), // USERS RESPONSE (get the list of users)
     ROOM_CREATED("203"),
     JOINED_SERVER("204"),
     JOINED_ROOM("206"),
-    LEFT("205");
+    LEFT("LEFT");
 
     private final String command;
 

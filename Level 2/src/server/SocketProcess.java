@@ -341,7 +341,7 @@ public class SocketProcess implements Runnable {
             userList.setLength(userList.length() - 1);
         }
 
-        sendMessage(Command.USERS, userList.toString());
+        sendMessage(Command.USER_LIST, userList.toString());
     }
 
     public void sendRooms() {

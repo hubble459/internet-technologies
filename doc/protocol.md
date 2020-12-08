@@ -8,8 +8,8 @@ Anders krijg je de error:
 s: 403 Please login first
 ```
 
-c = Client
-s = Server
+c = Client to server
+s = Server to you
 e = Server to everyone
 o = Server to everyone but you (Others)
 r = Server to everyone in the room
@@ -63,11 +63,13 @@ s: 409 Please give a message to send
 ```
 
 # Maak een Groep
+*Mogelijkheid voor het aanmaken van een groep.*
 Maak een room met het `MAKE` commando.
 
 ### Happy Flow
 ```shell script
 c: MAKE my_first_room
+s: 200 my_first_room
 e: MADE my_first_room
 ```
 
@@ -82,31 +84,47 @@ c: MAKE [with name that already exists]
 s: 405 Room with name room_bestaat_al already exists
 ```
 
+# List Users
+*Lijst van verbonden gebruikers opvragen door de client.*
+
+De namen zijn gescheiden door punt-comma's,
+daarom mag je niet inloggen met een punt-comma in de naam.
+
+### Happy Flow
+```shell script
+c: USERS
+s: 212 Quentin;Joost
+```
+
 # List Rooms
+*Een lijst van groepen opvragen.*
 ### Happy Flow
 De room namen zijn gescheiden door punt-comma's,
 daarom mag je geen room aanmaken met een punt-comma in de naam.
-# todo 200 response
+
 ```shell script
 c: ROOMS [should be empty, but doesnt matter]
-s: 200 owo;swag;shrek;my_first_room
+s: 209 owo;swag;shrek;my_first_room
 ```
 Wanneer er geen rooms zijn wordt er een lege 200 terug gestuurd:
 ```shell script
 c: ROOMS
-s: 200
+s: 209
 ```
 
 ### Sad Flows
 There's nothing sad about rooms
 
 # Join Room
+*Deelnemen aan een groep.*
+
 Als je al in een room zit verlaat je deze automatisch.
 Zie [leave room](#leave-room) voor details.
 
 ### Happy Flow
 ```shell script
 c: JOIN my_first_room
+s: 200 my_first_room
 r: JOINED Quentin joined my_first_room
 ```
 
@@ -117,9 +135,12 @@ s: 400 Room with name 'room_bestaat_niet' does not exist!
 ```
 
 # Leave Room
+*Uit een groep stappen.*
+
 ### Happy Flow
 ```shell script
 c: LEAVE
+s: 200 my_first_room
 r: LEFT Quentin left my_first_room
 ```
 
@@ -131,6 +152,8 @@ s: 404 You're not in a room
 ```
 
 # Talk in Room
+*Een bericht te sturen naar alle deelnemers van een groep.*
+
 Om in een room te praten gebruik je het `TALK` commando.
 
 ### Happy Flow
@@ -162,7 +185,7 @@ In dit geval zitten wij in `my_first_room`.
 Net als in [ROOMS](#list-rooms) zijn de namen gescheiden met een punt-comma.
 ```shell script
 c: ROOM
-s: 200 Quentin;Joost
+s: 210 Quentin;Joost
  ```
 
 ### Sad Flow
@@ -172,7 +195,9 @@ c: ROOM
 s: 404 Join a room first
 ```
 
-# Emergency Meeting (Vote Kicking)
+# Emergency Meeting
+*Mogelijkheid om een gebruiker uit een groep te kicken.*
+
 Als je een meeting start, kun je stemmen op iemand die in de groep zit.
 Je kunt ook op jezelf stemmen.
 
@@ -180,19 +205,18 @@ Je kunt ook op jezelf stemmen.
 In dit geval zitten wij weer in `my_first_room`.
 ```shell script
 c: KICK
-s:
+s: 211
 r: KICK Vote kick started
 ```
 
-Na 30 seconden stopt de kick automatisch en wordt degene met de meeste stemmen gekicked.
+Na 30 seconden en niet iedereen heeft gevote stopt de kick automatisch en wordt degene met de meeste stemmen gekicked.
 Of niemand als de stemmen gelijk zijn.
+Dit gebeurt ook als iedereen in de room heeft gestemd.
 ```shell script
 r: KRES 0 No one was kicked
 of
 r: KRES 1 [naam]
 ```
-
-Als iedereen ... ook.
 
 ### Sad Flow
 Er is al een emergency meeting gestart.
@@ -213,20 +237,35 @@ In dit geval zitten wij weer in `my_first_room`.
 De gebruikers in deze room zijn Quentin en Joost.
 ```shell script
 c: VOTE Joost
-s: VOTES Joost 1; Quentin 0
+s: 207 voted
+r: VOTES Joost 1; Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Quentin
+s: 207 voted
 r: VOTES Joost 1; Quentin 1
 r: KRES 0 No one was kicked
 ```
 
 ```shell script
 c: VOTE Joost
+s: 207 voted
 r: VOTES Joost 1; Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Joost
+s: 207 voted
 r: VOTES Joost 2; Quentin 0
 r: KRES 1 Joost was kicked ówò
+```
+
+```shell script
+c: SKIP
+s: 207 skipped
+r: VOTES Joost 0; Quentin 0
+# Nu ingelogt als Joost
+c: VOTE Quentin
+s: 207 voted
+r: VOTES Joost 0; Quentin 1
+r: KRES 1 Quentin was kicked ówò
 ```
 
 ### Sad Flow
@@ -236,8 +275,65 @@ c: VOTE Joost
 s: 404 Join a room first
 ```
 
-Vote persoon wie niet in de room zit.
-```
+Vote persoon die niet in de room zit.
+```shell script
 c: VOTE unknown_user
 s: 400 No user with this username found
 ```
+
+# WHISPER
+*Een privé bericht (direct message) sturen naar een andere gebruiker.*
+
+Als je een bericht bericht naar een specifiek iemand wil sturen gebruik je de `SEND` command.
+
+### Happy Flow
+Joost stuurt een bericht naar Quentin.
+```shell script
+c: SEND Quentin Hallo
+s: 200 message send
+Quentin: Joost Hallo
+```
+
+### Sad Flow
+Wanneer de gebruikersnaam niet bestaat
+```shell script
+c: SEND unkonwn Hallo
+s: 400 No user with this username found
+```
+
+Wanneer er geen bericht of username wordt meegegeven.
+```shell script
+c: SEND Quentin
+s: 409 No username/message given
+```
+
+```shell script
+c: SEND
+s: 409 No username/message given
+```
+
+# QUIT
+Als je bent ingelogd kun je de server verlaten door een `QUIT` bericht te sturen.
+
+```shell script
+c: QUIT
+s: 201 Quit successfully
+e: LEFT Quentin left
+```
+
+# PING
+Server stuurt een `PING` bericht elke 30 seconden om te kijken of je nog actief bent.
+Als je niet op de PING reageert met een PONG binnen 5 seconden, dan word je automatisch disconnected.
+
+### Happy Flow
+```shell script
+s: PING
+c: PONG
+```
+
+### Sad Flow
+```shell script
+s: PING
+s: DSCN
+```
+
