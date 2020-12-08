@@ -240,33 +240,33 @@ De gebruikers in deze room zijn Quentin en Joost.
 ```shell script
 c: VOTE Joost
 s: 207 Joost
-r: VOTES Joost 1; Quentin 0
+r: VOTES Joost 1;Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Quentin
 s: 207 Quentin
-r: VOTES Joost 1; Quentin 1
+r: VOTES Joost 1;Quentin 1
 r: KRES 0 No one was kicked
 ```
 
 ```shell script
 c: VOTE Joost
 s: 207 Joost
-r: VOTES Joost 1; Quentin 0
+r: VOTES Joost 1;Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Joost
 s: 207 Joost
-r: VOTES Joost 2; Quentin 0
+r: VOTES Joost 2;Quentin 0
 r: KRES 1 Joost was kicked ówò
 ```
 
 ```shell script
 c: SKIP
 s: 207
-r: VOTES Joost 0; Quentin 0
+r: VOTES Joost 0;Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Quentin
 s: 207 Quentin
-r: VOTES Joost 0; Quentin 1
+r: VOTES Joost 0;Quentin 1
 r: KRES 1 Quentin was kicked ówò
 ```
 

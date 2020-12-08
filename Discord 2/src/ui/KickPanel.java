@@ -20,25 +20,29 @@ public class KickPanel extends JDialog implements ServerUtil.OnReceive {
 
     public KickPanel() {
         setContentPane(contentPane);
-//        setModal(true);
         ServerUtil.onReceive(this);
+        setTitle("Emergency Meeting");
         votes = new DefaultListModel<>();
         voteList.setModel(votes);
         users = new HashMap<>();
 
-        buttonCancel.addActionListener(e -> exit());
+        buttonCancel.addActionListener(e -> ServerUtil.send(Command.VOTE_SKIP));
         buttonVote.addActionListener(e -> vote());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
+                ServerUtil.send(Command.VOTE_SKIP);
                 exit();
             }
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> exit(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> {
+            ServerUtil.send(Command.VOTE_SKIP);
+            exit();
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         ServerUtil.send(Command.ROOM);
     }
@@ -57,28 +61,29 @@ public class KickPanel extends JDialog implements ServerUtil.OnReceive {
 
             ServerUtil.send(Command.VOTE_KICK_USER, selected);
         }
-        exit();
     }
 
     @Override
     public void received(Message message) {
-        System.out.println(message.getPayload());
         switch (message.getCommand()) {
-            case ROOM:
+            case PEOPLE_IN_ROOM:
                 getUsers(message.getPayload());
                 break;
             case JOINED_ROOM:
-                users.putIfAbsent(message.getPayload(), 0);
+                users.putIfAbsent(message.getPayload().split(" ", 2)[0], 0);
                 updateList();
                 break;
-            case KICKED:
+            case KICK_RESULT:
                 exit();
                 break;
-            case VOTED:
-                String[] data = message.getPayload().split(" ", 2);
-                String username = data[0];
-                int votes = Integer.parseInt(data[1]);
-                users.put(username, votes);
+            case VOTES:
+                String[] names = message.getPayload().split(";");
+                for (String name : names) {
+                    String[] data = name.split(" ", 2);
+                    String username = data[0];
+                    int votes = Integer.parseInt(data[1]);
+                    users.put(username, votes);
+                }
                 updateList();
                 break;
         }

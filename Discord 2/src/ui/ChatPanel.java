@@ -26,28 +26,45 @@ public class ChatPanel {
 
         ServerUtil.onReceive(message -> {
             if (channel.getCommand() == message.getCommand()
+                    || message.getCommand() == Command.WHISPERED
                     || message.getCommand() == Command.JOINED_ROOM
                     || (channel.getName().equals("Main")
                     && message.getCommand() == Command.JOINED_SERVER)) {
                 if (message.getCommand() != Command.JOINED_ROOM && message.getCommand() != Command.JOINED_SERVER) {
                     channel.addMessage(message);
                 }
-                SwingUtilities.invokeLater(() -> {
-                    messages.addElement(message);
-                    messageList.ensureIndexIsVisible(messages.getSize() - 1);
-                });
-            } else if (message.getCommand() == Command.VOTE_KICK) {
-                // KICK STARTED
-                KickPanel dialog = new KickPanel();
-                dialog.pack();
-                dialog.setLocationRelativeTo(null);
-                dialog.setVisible(true);
-                SwingUtilities.invokeLater(() -> textField.setText(""));
+                showMessage(message);
+            } else if (!kickPopup &&
+                    (message.getCommand() == Command.VOTE_KICK || message.getCommand() == Command.VOTES)) {
+                startKick();
+            } else if (kickPopup && message.getCommand() == Command.KICK_RESULT) {
+                kickPopup = false;
+            } else if (message.getCommand().toString().startsWith("4")) {
+                message = new Message(Command.BROADCAST, "SERVER " + message.getPayload());
+                showMessage(message);
             }
         });
 
         textField.addActionListener(e -> sendFromTextField());
         button.addActionListener(e -> sendFromTextField());
+    }
+
+    private void showMessage(Message message) {
+        SwingUtilities.invokeLater(() -> {
+            messages.addElement(message);
+            messageList.ensureIndexIsVisible(messages.getSize() - 1);
+        });
+    }
+
+    private boolean kickPopup = false;
+
+    private void startKick() {
+        KickPanel dialog = new KickPanel();
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+        SwingUtilities.invokeLater(() -> textField.setText(""));
+        kickPopup = true;
     }
 
     public void sendFromTextField() {
@@ -74,6 +91,13 @@ public class ChatPanel {
             messages.addAll(channel.getMessages());
         });
 
+    }
+
+    public void addMessage(Message message) {
+        SwingUtilities.invokeLater(() -> {
+            messages.addElement(message);
+            messageList.ensureIndexIsVisible(messages.getSize() - 1);
+        });
     }
 
     static class MyCellRenderer extends DefaultListCellRenderer {

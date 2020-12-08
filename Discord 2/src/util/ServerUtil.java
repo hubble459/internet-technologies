@@ -17,6 +17,8 @@ public class ServerUtil {
     private OutputStream outputStream;
     private PrintWriter writer;
     private InputStream inputStream;
+    private String username;
+    private boolean loggedIn;
     private final Runnable inputReader = new Runnable() {
         @Override
         public void run() {
@@ -33,26 +35,21 @@ public class ServerUtil {
                         onReceive.received(Message.fromLine(line));
                     }
 
-                    // TODO replace
                     if (line.startsWith(Command.DISCONNECTED.toString())) {
                         socket.close();
                     }
                 }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
+                JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                connect();
             }
         }
     };
-    private String username;
-    private boolean loggedIn;
 
     private ServerUtil() {
         onReceiveHandlers = new ArrayList<>();
         afterLoginListeners = new ArrayList<>();
-    }
-
-    public static ServerUtil getInstance() {
-        return instance;
     }
 
     public static void onReceive(OnReceive handler) {
@@ -99,7 +96,7 @@ public class ServerUtil {
             instance.outputStream = instance.socket.getOutputStream();
             instance.writer = new PrintWriter(instance.outputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         instance.onReceiveHandlers.add(new OnReceive() {

@@ -2,6 +2,7 @@ package ui;
 
 import model.Channel;
 import model.Command;
+import model.Message;
 import util.ServerUtil;
 
 import javax.swing.*;
@@ -58,9 +59,16 @@ public class ChannelPanel {
         });
 
         ServerUtil.onReceive(message -> {
-            if (message.getCommand() == Command.WHISPER) {
+            if (message.getCommand() == Command.WHISPER
+                    || message.getCommand() == Command.WHISPERED) {
                 Channel current = chatPanel.getChannel();
-                String from = message.getPayload().split(" ", 2)[0];
+
+                String from = ServerUtil.getUsername();
+
+                if (message.getCommand() == Command.WHISPER) {
+                    from = message.getPayload().split(" ", 2)[0];
+                }
+
                 if (!current.getName().equals(from)) {
                     Channel channel = getChannelFromUsername(from);
                     if (channel != null) {
@@ -79,11 +87,16 @@ public class ChannelPanel {
                     roomList.repaint();
                     refreshTabNotificationCount();
                 }
-            }else if (message.getCommand() == Command.KICKED) {
-                String username = message.getPayload().split(" ", 2)[0];
-                if (ServerUtil.getUsername().equals(username)) {
-                    JOptionPane.showMessageDialog(null, "You were kicked from the chat!", "KICKED", JOptionPane.ERROR_MESSAGE);
-                    gotoMain();
+            } else if (message.getCommand() == Command.KICK_RESULT) {
+                if (message.getPayload().startsWith("1")) {
+                    String username = message.getPayload().split(" ", 3)[1];
+                    chatPanel.addMessage(new Message(Command.BROADCAST_IN_ROOM, "SERVER " + username + " was kicked..."));
+                    if (ServerUtil.getUsername().equals(username)) {
+                        JOptionPane.showMessageDialog(null, "You were kicked from the chat!", "KICKED", JOptionPane.ERROR_MESSAGE);
+                        gotoMain();
+                    }
+                } else {
+                    chatPanel.addMessage(new Message(Command.BROADCAST_IN_ROOM, "SERVER no-one was kicked"));
                 }
             }
         });

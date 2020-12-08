@@ -361,40 +361,28 @@ public class SocketProcess implements Runnable {
     public void joinRoom(Message message) {
         String roomName = message.getPayload();
         boolean exist = false;
-        Room current = null;
+        Room current = room;
         if (roomName.matches("\\w{3,14}")) {
             for (Room room : rooms) {
-                if (room.contains(this)) {
-                    current = room;
-
-                    if (exist) {
-                        break;
-                    }
-                }
-
                 if (room.getRoomName().equals(roomName)) {
-                    this.room = room;
-
                     exist = true;
 
                     if (current != null) {
-                        break;
+                        if (current == room) {
+                            sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
+                            return;
+                        } else {
+                            current.leave(this);
+                        }
                     }
+
+                    this.room = room;
+                    room.join(this);
                 }
             }
         }
         if (!exist) {
             sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
-        } else if (current == room) {
-            sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
-            return;
-        }
-
-        if (exist) {
-            room.join(this);
-            if (current != null) {
-                current.leave(this);
-            }
         }
     }
 

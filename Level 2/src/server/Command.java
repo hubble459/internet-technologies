@@ -13,6 +13,7 @@ public enum Command {
     VOTE_KICK("KICK"), // KICK (to start kick)
     VOTE_SKIP("SKIP"), // SKIP (to skip vote)
     VOTE_KICK_USER("VOTE"), // KICK <username> (to vote for a user)
+    VOTES("VOTES"),
     LOGIN("CONN"), // CONN <username> (to login)
     QUIT("QUIT"), // QUIT (to disconnect)
     BROADCAST("BCST"), // BCST <message> (to broadcast message)
@@ -36,7 +37,6 @@ public enum Command {
     ALREADY_VOTED("412"),
     LOGGED_IN("200"),
     QUITED("201"),
-    KICKED("202"),
     ROOM_CREATED_RESPONSE("203"),
     BROADCASTED("204"),
     LEAVE_ROOM_RESPONSE("205"),

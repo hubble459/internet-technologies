@@ -7,6 +7,8 @@ import util.ServerUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class MainScreen extends JFrame {
@@ -19,6 +21,8 @@ public class MainScreen extends JFrame {
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setContentPane(mainPanel);
+        ImageIcon img = new ImageIcon("./Discord 2/uwu.jpg");
+        setIconImage(img.getImage());
         setupMenu();
         pack();
         setLocationRelativeTo(null);
@@ -42,7 +46,7 @@ public class MainScreen extends JFrame {
         ServerUtil.onReceive(new ServerUtil.OnReceive() {
             @Override
             public void received(Message message) {
-                if (askedForRooms && message.getCommand() == Command.ROOMS) {
+                if (askedForRooms && message.getCommand() == Command.ROOM_LIST) {
                     String rooms = message.getPayload();
                     if (!rooms.isEmpty()) {
                         String[] roomNames = rooms.split(";");
@@ -53,7 +57,7 @@ public class MainScreen extends JFrame {
                     }
                 } else if (askedForRooms && message.getCommand() == Command.UNKNOWN) {
                     ServerUtil.removeOnReceive(this);
-                } else if (askedForRooms && message.getCommand() == Command.USERS) {
+                } else if (askedForRooms && message.getCommand() == Command.USER_LIST) {
                     String users = message.getPayload();
                     if (!users.isEmpty()) {
                         String[] usernames = users.split(";");
@@ -78,8 +82,15 @@ public class MainScreen extends JFrame {
         JMenu options = new JMenu("Options");
         options.setMnemonic(KeyEvent.VK_O);
 
-        options.add("Close");
-        options.add("Logout");
+        options.add("Quit").addActionListener(e -> {
+            ServerUtil.onReceive(message -> {
+                if (message.getCommand() == Command.QUITED) {
+                    JOptionPane.showMessageDialog(null, "Quit successfully", "Quited", JOptionPane.PLAIN_MESSAGE);
+                    System.exit(0);
+                }
+            });
+            ServerUtil.send(Command.QUIT);
+        });
         options.add("Help");
 
         menuBar.add(options);

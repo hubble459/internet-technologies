@@ -52,7 +52,6 @@ public class Room {
     }
 
     public void removeKickRequest() {
-
         kickRequest = null;
     }
 
@@ -84,7 +83,7 @@ public class Room {
 
     public void voteSkip(SocketProcess voter) {
         if (kickRequest != null) {
-            kickRequest.skip();
+            kickRequest.skip(voter);
         } else {
             voter.sendMessage(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first");
         }

@@ -38,12 +38,17 @@ public class Message {
         if (command == Command.BROADCAST
                 || command == Command.BROADCAST_IN_ROOM
                 || command == Command.WHISPER
+                || command == Command.WHISPERED
                 || command == Command.JOINED_SERVER
                 || command == Command.JOINED_ROOM) {
             String payload = this.payload;
             if (command == Command.JOINED_SERVER
                     || command == Command.JOINED_ROOM) {
                 payload = "SERVER " + payload;
+            }
+
+            if (command == Command.WHISPERED) {
+                payload = ServerUtil.getUsername() + " " + payload;
             }
 
             String[] split = payload.split(" ", 2);
