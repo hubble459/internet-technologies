@@ -13,7 +13,6 @@ public class SocketProcess implements Runnable {
     private boolean connected;
     private boolean loggedIn;
     private boolean ponged;
-    private boolean voted;
     private Room room;
     private OnLoginListener onLoginListener;
     private String username;
@@ -114,24 +113,23 @@ public class SocketProcess implements Runnable {
                 break;
             case VOTE_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
-                    room.startKick();
+                    sendMessage(Command.VOTE_KICK_STARTED, room.getRoomName());
+                    room.startKick(this);
                 }
                 break;
             case VOTE_KICK_USER:
-                if (ensureLoggedIn() && ensureInRoom() && ensureNotVoted()) {
+                if (ensureLoggedIn() && ensureInRoom()) {
                     SocketProcess user = getUserFromUsername(payload);
                     if (user != null) {
-                        voted = true;
-                        room.voteFor(user);
+                        room.voteFor(this, user);
                     } else {
                         sendMessage(Command.UNKNOWN, "No user with this username found");
                     }
                 }
                 break;
             case VOTE_SKIP:
-                if (ensureLoggedIn() && ensureInRoom() && ensureNotVoted()) {
-                    voted = true;
-                    room.voteSkip();
+                if (ensureLoggedIn() && ensureInRoom()) {
+                    room.voteSkip(this);
                 }
                 break;
             case LOGIN:
@@ -180,6 +178,7 @@ public class SocketProcess implements Runnable {
                 break;
             case BROADCAST:
                 if (ensureLoggedIn() && ensureMessageGiven(message)) {
+                    sendMessage(Command.BROADCASTED, message.getPayload());
                     broadcast(message);
                 }
                 break;
@@ -187,19 +186,6 @@ public class SocketProcess implements Runnable {
                 ponged = true;
                 break;
         }
-    }
-
-    private boolean ensureNotVoted() {
-        if (voted) {
-            sendMessage(Command.ALREADY_VOTED, "You have already voted");
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    public void setVoted(boolean voted) {
-        this.voted = voted;
     }
 
     private boolean ensureMessageGiven(Message message) {
@@ -243,7 +229,8 @@ public class SocketProcess implements Runnable {
         if (user != null) {
             Message msg = new Message(Command.WHISPER, this.username + " " + message);
             user.sendMessage(msg);
-            sendMessage(msg);
+
+            sendMessage(Command.WHISPERED, message);
         } else {
             sendMessage(Command.UNKNOWN, "No user with this username found");
         }
@@ -354,7 +341,7 @@ public class SocketProcess implements Runnable {
             roomList.setLength(roomList.length() - 1);
         }
 
-        sendMessage(Command.ROOMS, roomList.toString());
+        sendMessage(Command.ROOM_LIST, roomList.toString());
     }
 
     public void sendUsersInRoom() {
@@ -368,7 +355,7 @@ public class SocketProcess implements Runnable {
             usersList.deleteCharAt(usersList.length() - 1);
         }
 
-        sendMessage(Command.ROOM, usersList.toString());
+        sendMessage(Command.PEOPLE_IN_ROOM, usersList.toString());
     }
 
     public void joinRoom(Message message) {
@@ -416,6 +403,7 @@ public class SocketProcess implements Runnable {
         boolean inRoom = false;
         for (Room room : rooms) {
             if (room.contains(this)) {
+                sendMessage(Command.TALKED, message.getPayload());
                 room.broadcastInRoom(message);
                 inRoom = true;
                 break;
@@ -433,6 +421,7 @@ public class SocketProcess implements Runnable {
             if (roomName.matches("\\w{3,14}")) {
                 Room room = new Room(message.getPayload());
                 rooms.add(room);
+                sendMessage(Command.ROOM_CREATED_RESPONSE, room.toString());
                 Message roomCreated = new Message(Command.ROOM_CREATED, room.toString());
                 for (SocketProcess client : clients) {
                     client.sendMessage(roomCreated);

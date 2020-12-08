@@ -51,7 +51,7 @@ Als je een bericht naar iedereen op de server wilt versturen dan gebruik je `BCS
 ### Happy Flow TODO
 ```shell script
 c: BCST Hello World
-s: 200 Message send
+s: 204 Message send
 e: BCST Quentin Hello World
 ```
 
@@ -64,12 +64,13 @@ s: 409 Please give a message to send
 
 # Maak een Groep
 *Mogelijkheid voor het aanmaken van een groep.*
+
 Maak een room met het `MAKE` commando.
 
 ### Happy Flow
 ```shell script
 c: MAKE my_first_room
-s: 200 my_first_room
+s: 203 my_first_room
 e: MADE my_first_room
 ```
 
@@ -106,7 +107,8 @@ daarom mag je geen room aanmaken met een punt-comma in de naam.
 c: ROOMS [should be empty, but doesnt matter]
 s: 209 owo;swag;shrek;my_first_room
 ```
-Wanneer er geen rooms zijn wordt er een lege 200 terug gestuurd:
+
+Wanneer er geen rooms zijn, wordt er een lege 209 terug gestuurd:
 ```shell script
 c: ROOMS
 s: 209
@@ -124,7 +126,7 @@ Zie [leave room](#leave-room) voor details.
 ### Happy Flow
 ```shell script
 c: JOIN my_first_room
-s: 200 my_first_room
+s: 206 my_first_room
 r: JOINED Quentin joined my_first_room
 ```
 
@@ -140,7 +142,7 @@ s: 400 Room with name 'room_bestaat_niet' does not exist!
 ### Happy Flow
 ```shell script
 c: LEAVE
-s: 200 my_first_room
+s: 205 my_first_room
 r: LEFT Quentin left my_first_room
 ```
 
@@ -160,7 +162,7 @@ Om in een room te praten gebruik je het `TALK` commando.
 
 ```shell script
 c: TALK Hello World!
-s: 200
+s: 213 Hello World!
 r: TALK Quentin Hello World!
 ```
 
@@ -205,7 +207,7 @@ Je kunt ook op jezelf stemmen.
 In dit geval zitten wij weer in `my_first_room`.
 ```shell script
 c: KICK
-s: 211
+s: 211 my_first_room
 r: KICK Vote kick started
 ```
 
@@ -237,33 +239,33 @@ In dit geval zitten wij weer in `my_first_room`.
 De gebruikers in deze room zijn Quentin en Joost.
 ```shell script
 c: VOTE Joost
-s: 207 voted
+s: 207 Joost
 r: VOTES Joost 1; Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Quentin
-s: 207 voted
+s: 207 Quentin
 r: VOTES Joost 1; Quentin 1
 r: KRES 0 No one was kicked
 ```
 
 ```shell script
 c: VOTE Joost
-s: 207 voted
+s: 207 Joost
 r: VOTES Joost 1; Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Joost
-s: 207 voted
+s: 207 Joost
 r: VOTES Joost 2; Quentin 0
 r: KRES 1 Joost was kicked ówò
 ```
 
 ```shell script
 c: SKIP
-s: 207 skipped
+s: 207
 r: VOTES Joost 0; Quentin 0
 # Nu ingelogt als Joost
 c: VOTE Quentin
-s: 207 voted
+s: 207 Quentin
 r: VOTES Joost 0; Quentin 1
 r: KRES 1 Quentin was kicked ówò
 ```
@@ -290,7 +292,7 @@ Als je een bericht bericht naar een specifiek iemand wil sturen gebruik je de `S
 Joost stuurt een bericht naar Quentin.
 ```shell script
 c: SEND Quentin Hallo
-s: 200 message send
+s: 208 Hallo
 Quentin: Joost Hallo
 ```
 
@@ -336,4 +338,3 @@ c: PONG
 s: PING
 s: DSCN
 ```
-

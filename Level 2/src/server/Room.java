@@ -21,19 +21,20 @@ public class Room {
     public void join(SocketProcess client) {
         clients.add(client);
         broadcastInRoom(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
+        client.sendMessage(Command.JOINED_ROOM_RESPONSE, client.getUsername() + " joined " + roomName);
     }
 
     public void leave(SocketProcess client) {
-        broadcastInRoom(new Message(Command.LEFT, client.getUsername() + " left " + roomName));
+        broadcastInRoom(new Message(Command.LEAVE_ROOM_RESPONSE, client.getUsername() + " left " + roomName));
         removeClient(client);
     }
 
     public void kick(SocketProcess client) {
         if (clients.contains(client)) {
-            broadcastInRoom(new Message(Command.KICKED, client.getUsername() + " was kicked ówò"));
+            broadcastInRoom(new Message(Command.KICK_RESULT, "1 " + client.getUsername() + " was kicked ówò"));
             removeClient(client);
         } else {
-            broadcastInRoom(new Message(Command.KICKED, client.getUsername() + " already left the room ówò"));
+            broadcastInRoom(new Message(Command.KICK_RESULT, "0 " + client.getUsername() + " already left the room ówò"));
         }
     }
 
@@ -59,32 +60,33 @@ public class Room {
         return clients;
     }
 
-    public void startKick() {
+    public void startKick(SocketProcess starter) {
         if (kickRequest == null) {
             kickRequest = new KickRequest(this);
             broadcastInRoom(new Message(Command.VOTE_KICK, "Vote kick started"));
         } else {
-            broadcastInRoom(new Message(Command.KICK_ALREADY_REQUESTED, "A kick has already been requested"));
+            starter.sendMessage(Command.KICK_ALREADY_REQUESTED, "A kick has already been requested");
         }
     }
 
-    public void voteFor(SocketProcess user) {
+    public void voteFor(SocketProcess voter, SocketProcess user) {
         if (kickRequest != null) {
             if (clients.contains(user)) {
-                kickRequest.increment(user);
+                voter.sendMessage(Command.VOTED, user.getUsername());
+                kickRequest.increment(voter, user);
             } else {
-                broadcastInRoom(new Message(Command.UNKNOWN, "No user with this username found"));
+                voter.sendMessage(Command.UNKNOWN, "No user with this username found");
             }
         } else {
-            broadcastInRoom(new Message(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first"));
+            voter.sendMessage(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first");
         }
     }
 
-    public void voteSkip() {
+    public void voteSkip(SocketProcess voter) {
         if (kickRequest != null) {
             kickRequest.skip();
         } else {
-            broadcastInRoom(new Message(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first"));
+            voter.sendMessage(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first");
         }
     }
 

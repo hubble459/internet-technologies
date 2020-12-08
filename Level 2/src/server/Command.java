@@ -8,6 +8,7 @@ public enum Command {
     LEAVE_ROOM("LEAVE"), // LEAVE (to leave room)
     BROADCAST_IN_ROOM("TALK"), // TALK <message> (to speak in room)
     CREATE_ROOM("MAKE"), // MAKE <room_name> (to create)
+    ROOM_CREATED("MADE"), // MADE <room_name> (to broadcast)
     WHISPER("SEND"), // SEND <username> (to private message)
     VOTE_KICK("KICK"), // KICK (to start kick)
     VOTE_SKIP("SKIP"), // SKIP (to skip vote)
@@ -19,7 +20,7 @@ public enum Command {
     PING("PING"), // (ping message)
     DISCONNECTED("DCST"), // Disconnected
     INFO("INFO"), // (info message)
-    KRICK_RESPONSE("KRES"), // KRES <type> <username>
+    KICK_RESULT("KRES"), // KRES <type> <username>
     UNKNOWN("400"),
     ALREADY_LOGGED_IN("401"),
     INVALID_FORMAT("402"),
@@ -36,15 +37,19 @@ public enum Command {
     LOGGED_IN("200"),
     QUITED("201"),
     KICKED("202"),
+    ROOM_CREATED_RESPONSE("203"),
+    BROADCASTED("204"),
+    LEAVE_ROOM_RESPONSE("205"),
+    JOINED_ROOM_RESPONSE("206"),
     VOTED("207"),
+    WHISPERED("208"),
     ROOM_LIST("209"),
     PEOPLE_IN_ROOM("210"),
     VOTE_KICK_STARTED("211"),
-    NO_ONE_WAS_KICKED("208"),
     USER_LIST("212"), // USERS RESPONSE (get the list of users)
-    ROOM_CREATED("203"),
-    JOINED_SERVER("204"),
-    JOINED_ROOM("206"),
+    TALKED("213"), // USERS RESPONSE (get the list of users)
+    JOINED_SERVER("JSERVER"),
+    JOINED_ROOM("JROOM"),
     LEFT("LEFT");
 
     private final String command;

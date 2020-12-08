@@ -1,5 +1,6 @@
 package server;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -7,12 +8,14 @@ import java.util.TimerTask;
 public class KickRequest {
     private final Room room;
     private final HashMap<SocketProcess, Integer> votes;
+    private final ArrayList<SocketProcess> voted;
     private final Timer timer;
     private int skips;
 
     public KickRequest(Room room) {
         this.room = room;
         this.votes = new HashMap<>();
+        this.voted = new ArrayList<>();
         for (SocketProcess client : room.getClients()) {
             votes.putIfAbsent(client, 0);
         }
@@ -26,12 +29,18 @@ public class KickRequest {
         }, 30000);
     }
 
-    public void increment(SocketProcess user) {
-        votes.putIfAbsent(user, 0);
-        votes.computeIfPresent(user, (s, integer) -> integer + 1);
+    public void increment(SocketProcess voter, SocketProcess user) {
+        if (voted.contains(voter)){
+            voter.sendMessage(Command.ALREADY_VOTED, "Already voted");
+        } else {
+            voted.add(voter);
 
-        room.broadcastInRoom(new Message(Command.VOTED, this.toString()));
-        kick(false);
+            votes.putIfAbsent(user, 0);
+            votes.computeIfPresent(user, (s, integer) -> integer + 1);
+
+            room.broadcastInRoom(new Message(Command.VOTED, this.toString()));
+            kick(false);
+        }
     }
 
     public void kick(boolean force) {
@@ -40,14 +49,10 @@ public class KickRequest {
         if (count >= room.size() || force) {
             SocketProcess user = getHighestVotedFor();
 
-            for (SocketProcess socketProcess : votes.keySet()) {
-                socketProcess.setVoted(false);
-            }
-
             if (user != null) {
                 room.kick(user);
             } else {
-                room.broadcastInRoom(new Message(Command.NO_ONE_WAS_KICKED, "No one was kicked"));
+                room.broadcastInRoom(new Message(Command.KICK_RESULT, "0 No one was kicked"));
             }
             timer.cancel();
             room.removeKickRequest();

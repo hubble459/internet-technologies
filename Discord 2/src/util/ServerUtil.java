@@ -34,7 +34,7 @@ public class ServerUtil {
                     }
 
                     // TODO replace
-                    if (line.startsWith("DCST")) {
+                    if (line.startsWith(Command.DISCONNECTED.toString())) {
                         socket.close();
                     }
                 }
