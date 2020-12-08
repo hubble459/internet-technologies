@@ -175,7 +175,7 @@ public class SocketProcess implements Runnable {
             case QUIT:
                 if (ensureLoggedIn()) {
                     sendMessage(Command.QUITED, "Quit successfully");
-                    disconnected();
+                    connected = false;
                 }
                 break;
             case BROADCAST:
@@ -323,7 +323,7 @@ public class SocketProcess implements Runnable {
     }
 
     public void disconnected() {
-        broadcast(new Message(Command.LEFT, username + " left"));
+        broadcast(new Message(Command.LEFT, "left"));
         if (room != null) {
             room.leave(this);
         }
