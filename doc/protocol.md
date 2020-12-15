@@ -338,3 +338,18 @@ c: PONG
 s: PING
 s: DSCN
 ```
+
+# File Transmission
+
+##  FILE [ontvanger] [file_bytes]
+### Happy Flow
+```shell script
+s: FILE Joost [bytes]
+c: 200
+```
+
+
+### Sad Flow
+```shell script
+
+```

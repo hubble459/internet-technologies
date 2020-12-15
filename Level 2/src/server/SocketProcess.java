@@ -2,7 +2,10 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Base64;
 
 public class SocketProcess implements Runnable {
     private final Socket socket;
@@ -97,6 +100,9 @@ public class SocketProcess implements Runnable {
         String payload = message.getPayload();
 
         switch (message.getCommand()) {
+            case FILE:
+                receiveFile(Base64.getDecoder().decode(message.getPayload().getBytes()));
+                break;
             case WHISPER:
                 if (ensureLoggedIn()) {
                     String[] split = payload.split(" ");
@@ -186,6 +192,19 @@ public class SocketProcess implements Runnable {
                 ponged = true;
                 break;
         }
+    }
+
+    private void receiveFile(byte[] bytes) {
+        new Thread(() -> {
+            try {
+                Files.write(new File("uploaded.jpg").toPath(), bytes,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING,
+                        StandardOpenOption.WRITE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private boolean ensureMessageGiven(Message message) {

@@ -22,6 +22,7 @@ public enum Command {
     DISCONNECTED("DCST"), // Disconnected
     INFO("INFO"), // (info message)
     KICK_RESULT("KRES"), // KRES <type> <username>
+    FILE("FILE"), // FILE <base64>
     UNKNOWN("400"),
     ALREADY_LOGGED_IN("401"),
     INVALID_FORMAT("402"),
