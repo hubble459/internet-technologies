@@ -21,11 +21,11 @@ public class Room {
     public void join(SocketProcess client) {
         clients.add(client);
         broadcastInRoom(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
-        client.sendMessage(Command.JOINED_ROOM_RESPONSE, client.getUsername() + " joined " + roomName);
+        client.sendMessage(Command.GOOD_RESPONSE, client.getUsername() + " joined " + roomName);
     }
 
     public void leave(SocketProcess client) {
-        broadcastInRoom(new Message(Command.LEAVE_ROOM_RESPONSE, client.getUsername() + " left " + roomName));
+        broadcastInRoom(new Message(Command.LEFT_ROOM, client.getUsername() + " left " + roomName));
         removeClient(client);
     }
 
@@ -64,20 +64,19 @@ public class Room {
             kickRequest = new KickRequest(this);
             broadcastInRoom(new Message(Command.VOTE_KICK, "Vote kick started"));
         } else {
-            starter.sendMessage(Command.KICK_ALREADY_REQUESTED, "A kick has already been requested");
+            starter.sendMessage(Command.BAD_RESPONSE, "A kick has already been requested");
         }
     }
 
     public void voteFor(SocketProcess voter, SocketProcess user) {
         if (kickRequest != null) {
             if (clients.contains(user)) {
-                voter.sendMessage(Command.VOTED, user.getUsername());
                 kickRequest.increment(voter, user);
             } else {
-                voter.sendMessage(Command.UNKNOWN, "No user with this username found");
+                voter.sendMessage(Command.BAD_RESPONSE, "No user with this username found");
             }
         } else {
-            voter.sendMessage(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first");
+            voter.sendMessage(Command.BAD_RESPONSE, "Make a kick request first");
         }
     }
 
@@ -85,7 +84,7 @@ public class Room {
         if (kickRequest != null) {
             kickRequest.skip(voter);
         } else {
-            voter.sendMessage(Command.MAKE_A_REQUEST_FIRST, "Make a kick request first");
+            voter.sendMessage(Command.BAD_RESPONSE, "Make a kick request first");
         }
     }
 

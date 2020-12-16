@@ -84,7 +84,6 @@ public class ChannelPanel {
                 if (chatPanel.getChannel() != main) {
                     main.addMessage(message);
                     main.addNotification();
-                    roomList.repaint();
                     refreshTabNotificationCount();
                 }
             } else if (message.getCommand() == Command.KICK_RESULT) {
@@ -122,6 +121,7 @@ public class ChannelPanel {
                 tabbedPane.setTitleAt(1, TITLE_USERS);
             }
         }
+        roomList.repaint();
     }
 
     private int getNotificationSum() {

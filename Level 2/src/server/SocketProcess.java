@@ -2,8 +2,6 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -74,7 +72,7 @@ public class SocketProcess implements Runnable {
             // Dissect the message
             Message message = Message.fromString(line);
             if (message == null) {
-                sendMessage(Command.UNKNOWN, "Unknown command");
+                sendMessage(Command.BAD_RESPONSE, "Unknown command");
             } else {
                 System.out.println("[" + username + "] " + message);
                 handleMessage(message);
@@ -101,36 +99,20 @@ public class SocketProcess implements Runnable {
 
         switch (message.getCommand()) {
             case FILE:
-                receiveFile(Base64.getDecoder().decode(message.getPayload().getBytes()));
+                receiveFile(message);
                 break;
             case WHISPER:
-                if (ensureLoggedIn()) {
-                    String[] split = payload.split(" ");
-                    if (payload.isEmpty() || split.length <= 1) {
-                        // Empty line is an unknown command
-                        sendMessage(Command.NO_MESSAGE, "No username/message given");
-                    } else {
-                        String username = split[0];
-                        String msg = payload.substring(username.length() + 1);
-
-                        privateMessage(username, msg);
-                    }
-                }
+                whisper(message);
                 break;
             case VOTE_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
-                    sendMessage(Command.VOTE_KICK_STARTED, room.getRoomName());
+                    sendMessage(Command.GOOD_RESPONSE, room.getRoomName());
                     room.startKick(this);
                 }
                 break;
             case VOTE_KICK_USER:
                 if (ensureLoggedIn() && ensureInRoom()) {
-                    SocketProcess user = getUserFromUsername(payload);
-                    if (user != null) {
-                        room.voteFor(this, user);
-                    } else {
-                        sendMessage(Command.UNKNOWN, "No user with this username found");
-                    }
+                    voteKick(message);
                 }
                 break;
             case VOTE_SKIP:
@@ -178,38 +160,53 @@ public class SocketProcess implements Runnable {
                 break;
             case QUIT:
                 if (ensureLoggedIn()) {
-                    sendMessage(Command.QUITED, "Quit successfully");
+                    sendMessage(Command.GOOD_RESPONSE, "Quit successfully");
                     connected = false;
                 }
                 break;
             case BROADCAST:
                 if (ensureLoggedIn() && ensureMessageGiven(message)) {
-                    sendMessage(Command.BROADCASTED, message.getPayload());
+                    sendMessage(Command.GOOD_RESPONSE, message.getPayload());
                     broadcast(message);
                 }
                 break;
             case PONG:
                 ponged = true;
+                sendMessage(Command.GOOD_RESPONSE, "Pong received");
                 break;
         }
     }
 
-    private void receiveFile(byte[] bytes) {
-        new Thread(() -> {
-            try {
-                Files.write(new File("uploaded.jpg").toPath(), bytes,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING,
-                        StandardOpenOption.WRITE);
-            } catch (IOException e) {
-                e.printStackTrace();
+    private void receiveFile(Message message) {
+        String[] parts = message.getPayload().split(" ", 3);
+        String to = parts[0];
+        String filename = parts[1];
+        String base64 = parts[2];
+
+        byte[] bytes = Base64.getDecoder().decode(base64.getBytes());
+
+        File file = new File("files/" + filename);
+        int count = 0;
+        while (file.exists()) {
+            file = new File("files/" + count++ + '_' + filename);
+        }
+        try {
+            boolean created = file.createNewFile();
+            if (created) {
+                FileWriter writer = new FileWriter(file);
+                for (byte aByte : bytes) {
+                    writer.write(aByte);
+                }
+                writer.close();
             }
-        }).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean ensureMessageGiven(Message message) {
         if (message.getPayload().isEmpty()) {
-            sendMessage(Command.NO_MESSAGE, "Please give a message to send");
+            sendMessage(Command.BAD_RESPONSE, "Please give a message to send");
             return false;
         } else {
             return true;
@@ -220,7 +217,7 @@ public class SocketProcess implements Runnable {
         if (loggedIn) {
             return true;
         } else {
-            sendMessage(Command.NOT_LOGGED_IN, "Please log in first");
+            sendMessage(Command.BAD_RESPONSE, "Please log in first");
             return false;
         }
     }
@@ -229,7 +226,7 @@ public class SocketProcess implements Runnable {
         if (room != null) {
             return true;
         } else {
-            sendMessage(Command.NOT_IN_A_ROOM, "Join a room first");
+            sendMessage(Command.BAD_RESPONSE, "Join a room first");
             return false;
         }
     }
@@ -243,15 +240,41 @@ public class SocketProcess implements Runnable {
         return null;
     }
 
+
+    private void voteKick(Message message) {
+        SocketProcess user = getUserFromUsername(message.getPayload());
+        if (user != null) {
+            room.voteFor(this, user);
+        } else {
+            sendMessage(Command.BAD_RESPONSE, "No user with this username found");
+        }
+    }
+
+    private void whisper(Message message) {
+        String payload = message.getPayload();
+        if (ensureLoggedIn()) {
+            String[] split = payload.split(" ");
+            if (payload.isEmpty() || split.length <= 1) {
+                // Empty line is an unknown command
+                sendMessage(Command.BAD_RESPONSE, "No username/message given");
+            } else {
+                String username = split[0];
+                String msg = payload.substring(username.length() + 1);
+
+                privateMessage(username, msg);
+            }
+        }
+    }
+
     private void privateMessage(String username, String message) {
         SocketProcess user = getUserFromUsername(username);
         if (user != null) {
             Message msg = new Message(Command.WHISPER, this.username + " " + message);
             user.sendMessage(msg);
 
-            sendMessage(Command.WHISPERED, message);
+            sendMessage(Command.GOOD_RESPONSE, message);
         } else {
-            sendMessage(Command.UNKNOWN, "No user with this username found");
+            sendMessage(Command.BAD_RESPONSE, "No user with this username found");
         }
     }
 
@@ -262,7 +285,7 @@ public class SocketProcess implements Runnable {
                     username = payload;
                     loggedIn = true;
 
-                    sendMessage(Command.LOGGED_IN, "Logged in as " + username);
+                    sendMessage(Command.GOOD_RESPONSE, "Logged in as " + username);
 
                     Message message = new Message(Command.JOINED_SERVER, username + " joined the server");
                     for (SocketProcess client : clients) {
@@ -274,13 +297,13 @@ public class SocketProcess implements Runnable {
                     // Tell listener that we logged in
                     if (onLoginListener != null) onLoginListener.loggedIn(this);
                 } else {
-                    sendMessage(Command.ALREADY_LOGGED_IN, "User with username '" + payload + "' is already logged in");
+                    sendMessage(Command.BAD_RESPONSE, "User with username '" + payload + "' is already logged in");
                 }
             } else {
-                sendMessage(Command.INVALID_FORMAT, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
+                sendMessage(Command.BAD_RESPONSE, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
             }
         } else {
-            sendMessage(Command.ALREADY_LOGGED_IN, "Please logout first");
+            sendMessage(Command.BAD_RESPONSE, "Please logout first");
         }
     }
 
@@ -347,7 +370,7 @@ public class SocketProcess implements Runnable {
             userList.setLength(userList.length() - 1);
         }
 
-        sendMessage(Command.USER_LIST, userList.toString());
+        sendMessage(Command.GOOD_RESPONSE, userList.toString());
     }
 
     public void sendRooms() {
@@ -360,7 +383,7 @@ public class SocketProcess implements Runnable {
             roomList.setLength(roomList.length() - 1);
         }
 
-        sendMessage(Command.ROOM_LIST, roomList.toString());
+        sendMessage(Command.GOOD_RESPONSE, roomList.toString());
     }
 
     public void sendUsersInRoom() {
@@ -374,7 +397,7 @@ public class SocketProcess implements Runnable {
             usersList.deleteCharAt(usersList.length() - 1);
         }
 
-        sendMessage(Command.PEOPLE_IN_ROOM, usersList.toString());
+        sendMessage(Command.GOOD_RESPONSE, usersList.toString());
     }
 
     public void joinRoom(Message message) {
@@ -388,7 +411,7 @@ public class SocketProcess implements Runnable {
 
                     if (current != null) {
                         if (current == room) {
-                            sendMessage(Command.ALREADY_IN_ROOM, "You're already in this room");
+                            sendMessage(Command.BAD_RESPONSE, "You're already in this room");
                             return;
                         } else {
                             current.leave(this);
@@ -401,7 +424,7 @@ public class SocketProcess implements Runnable {
             }
         }
         if (!exist) {
-            sendMessage(Command.UNKNOWN, "Room with name '" + roomName + "' does not exist!");
+            sendMessage(Command.BAD_RESPONSE, "Room with name '" + roomName + "' does not exist!");
         }
     }
 
@@ -410,7 +433,7 @@ public class SocketProcess implements Runnable {
         boolean inRoom = false;
         for (Room room : rooms) {
             if (room.contains(this)) {
-                sendMessage(Command.TALKED, message.getPayload());
+                sendMessage(Command.GOOD_RESPONSE, message.getPayload());
                 room.broadcastInRoom(message);
                 inRoom = true;
                 break;
@@ -418,7 +441,7 @@ public class SocketProcess implements Runnable {
         }
 
         if (!inRoom) {
-            sendMessage(Command.NOT_IN_A_ROOM, "You haven't joined a room to talk in");
+            sendMessage(Command.BAD_RESPONSE, "You haven't joined a room to talk in");
         }
     }
 
@@ -428,16 +451,16 @@ public class SocketProcess implements Runnable {
             if (roomName.matches("\\w{3,14}")) {
                 Room room = new Room(message.getPayload());
                 rooms.add(room);
-                sendMessage(Command.ROOM_CREATED_RESPONSE, room.toString());
+                sendMessage(Command.GOOD_RESPONSE, room.toString());
                 Message roomCreated = new Message(Command.ROOM_CREATED, room.toString());
                 for (SocketProcess client : clients) {
                     client.sendMessage(roomCreated);
                 }
             } else {
-                sendMessage(Command.INVALID_FORMAT, "Room name should be between 3 and 14 characters, and should match [a-zA-Z_0-9]");
+                sendMessage(Command.BAD_RESPONSE, "Room name should be between 3 and 14 characters, and should match [a-zA-Z_0-9]");
             }
         } else {
-            sendMessage(Command.ROOM_NAME_EXIST, "Room with name " + roomName + " already exists");
+            sendMessage(Command.BAD_RESPONSE, "Room with name " + roomName + " already exists");
         }
     }
 
@@ -456,13 +479,14 @@ public class SocketProcess implements Runnable {
             if (room.contains(this)) {
                 this.room = null;
                 room.leave(this);
+                sendMessage(Command.GOOD_RESPONSE, "Left room");
                 isInRoom = true;
                 break;
             }
         }
 
         if (!isInRoom) {
-            sendMessage(Command.NOT_IN_A_ROOM, "You're not in a room!");
+            sendMessage(Command.BAD_RESPONSE, "You're not in a room!");
         }
     }
 

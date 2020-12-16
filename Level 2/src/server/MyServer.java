@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class MyServer {
-    public static final int TIMEOUT = -1; //5000; // -1 for no timeout, max 3.6e6 ms
+    public static final int TIMEOUT = 5000; //5000; // -1 for no timeout, max 3.6e6 ms
     private static final int DEFAULT_PORT = 1337;
 
     public static void main(String[] args) {

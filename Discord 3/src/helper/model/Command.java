@@ -1,4 +1,5 @@
-package server;
+package helper.model;
+
 
 public enum Command {
     // COMMANDS
@@ -33,26 +34,37 @@ public enum Command {
 
     // RESPONSES
     GOOD_RESPONSE("200"), // Good response
-    BAD_RESPONSE("400"); // Bad response
+    BAD_RESPONSE("400"), // Bad response
 
+    // OTHER
+    NONE(""),
+    SERVER("");
     private final String command;
 
     Command(String command) {
         this.command = command;
     }
 
-    @Override
-    public String toString() {
-        return command;
-    }
-
-    public static Command fromCommand(String command) {
+    public static Command fromString(String command) {
         for (Command value : values()) {
             if (value.command.equals(command)) {
                 return value;
             }
         }
-        return null;
+
+        if (command.startsWith("2")) {
+            return GOOD_RESPONSE;
+        } else if (command.startsWith("4")) {
+            return BAD_RESPONSE;
+        } else {
+            return null;
+        }
     }
 
+    @Override
+    public String toString() {
+        return command;
+    }
 }
+
+

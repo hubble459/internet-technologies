@@ -1,6 +1,5 @@
 package server;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -31,9 +30,11 @@ public class KickRequest {
     }
 
     public void increment(SocketProcess voter, SocketProcess user) {
-        if (voted.contains(voter)){
-            voter.sendMessage(Command.ALREADY_VOTED, "Already voted");
+        if (voted.contains(voter)) {
+            voter.sendMessage(Command.BAD_RESPONSE, "Already voted");
         } else {
+            voter.sendMessage(Command.GOOD_RESPONSE, user.getUsername());
+
             voted.add(voter);
 
             votes.putIfAbsent(user, 0);
@@ -100,12 +101,13 @@ public class KickRequest {
     }
 
     public void skip(SocketProcess voter) {
-        if (voted.contains(voter)){
-            voter.sendMessage(Command.ALREADY_VOTED, "Already voted");
+        if (voted.contains(voter)) {
+            voter.sendMessage(Command.BAD_RESPONSE, "Already voted");
         } else {
+            voter.sendMessage(Command.GOOD_RESPONSE, "Skipped");
             voted.add(voter);
             skips++;
-            room.broadcastInRoom(new Message(Command.VOTED, this.toString()));
+            room.broadcastInRoom(new Message(Command.VOTES, this.toString()));
             kick(false);
         }
     }

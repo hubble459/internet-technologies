@@ -59,12 +59,12 @@ public class ChatPanel {
     private boolean kickPopup = false;
 
     private void startKick() {
+        kickPopup = true;
         KickPanel dialog = new KickPanel();
         dialog.pack();
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
         SwingUtilities.invokeLater(() -> textField.setText(""));
-        kickPopup = true;
     }
 
     public void sendFromTextField() {
