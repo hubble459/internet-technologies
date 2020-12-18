@@ -1,4 +1,6 @@
-package server;
+package model;
+
+import process.SocketProcess;
 
 import java.util.ArrayList;
 

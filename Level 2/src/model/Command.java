@@ -1,4 +1,4 @@
-package server;
+package model;
 
 public enum Command {
     // COMMANDS
@@ -18,6 +18,7 @@ public enum Command {
     BROADCAST("BCST"), // BCST <message> (to broadcast message)
     PONG("PONG"), // PONG (send pong to notify server)
     FILE("FILE"), // FILE <recipient> <filename> <base64> (to send a file)
+    DOWNLOAD("DOWN"), // DOWN <filename> (To download a file)
 
     // NOTIFICATIONS
     INFO("INFO"), // (info message)
@@ -30,6 +31,8 @@ public enum Command {
     JOINED_ROOM("JROOM"), // JROOM <username> <message> (joined the room)
     LEFT_ROOM("RLEFT"), // RLEFT <username> <message> (left the room)
     LEFT("LEFT"), // LEFT <username> <message> (left the server)
+    //FILE("FILE"), // FILE <from> <filename> <checksum> (when you received a file)
+
 
     // RESPONSES
     GOOD_RESPONSE("200"), // Good response

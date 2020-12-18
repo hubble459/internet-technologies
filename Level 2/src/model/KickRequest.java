@@ -1,4 +1,6 @@
-package server;
+package model;
+
+import process.SocketProcess;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +67,7 @@ public class KickRequest {
      * Get the person with the most votes,
      * If there is multiple with the equal amount of votes, return null
      *
-     * @return SocketProcess or null
+     * @return process.SocketProcess or null
      */
     private SocketProcess getHighestVotedFor() {
         int max = 0;

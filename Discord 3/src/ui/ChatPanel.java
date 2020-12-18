@@ -1,15 +1,14 @@
 package ui;
 
-import helper.Shared;
 import helper.model.Command;
 import helper.model.Message;
 import model.Channel;
 import model.DisabledItemSelectionModel;
+import util.Checksum;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
 
@@ -32,6 +31,7 @@ public class ChatPanel {
         textField.addActionListener(e -> sendFromTextField());
         sendButton.addActionListener(e -> sendFromTextField());
         uploadButton.addActionListener(e -> uploadFile());
+//        uploadButton.setVisible(false);
     }
 
     private void uploadFile() {
@@ -44,9 +44,12 @@ public class ChatPanel {
             try {
                 byte[] bytes = Files.readAllBytes(file.toPath());
                 String base64 = Base64.getEncoder().encodeToString(bytes);
-                // Send file to self
-                commandListener.command(new Message(Command.FILE, Shared.username + ' ' + filename + ' ' +base64));
-            } catch (IOException e) {
+                commandListener.command(
+                        new Message(
+                                Command.FILE,
+                                channel.getName() + ' ' + filename + ' ' + base64 + ' ' + Checksum.getMD5Checksum(file)
+                        ));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -84,6 +87,7 @@ public class ChatPanel {
     public void setChannel(Channel channel) {
         if (this.channel != channel) {
             this.channel = channel;
+            uploadButton.setVisible(channel.isPM());
             channel.clearNotifications();
             SwingUtilities.invokeLater(() -> {
                 messages.clear();

@@ -6,6 +6,7 @@ import helper.model.Request;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -38,7 +39,9 @@ public class SocketHelper implements Runnable {
     }
 
     public void connect() throws IOException {
-        this.socket = new Socket(ip, port);
+        this.socket = new Socket();
+        this.socket.connect(new InetSocketAddress(ip, port), 2000);
+//        this.socket.setSoTimeout(2000);
         this.reader = new Scanner(socket.getInputStream());
         this.writer = new PrintWriter(socket.getOutputStream());
 

@@ -1,11 +1,20 @@
-package server;
+package process;
+
+import model.Command;
+import model.Message;
+import model.Room;
+import util.Checksum;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Locale;
 
 public class SocketProcess implements Runnable {
+    private final static String FILE_DIR = "files/";
     private final Socket socket;
     private final BufferedReader reader;
     private final PrintWriter writer;
@@ -101,6 +110,9 @@ public class SocketProcess implements Runnable {
             case FILE:
                 receiveFile(message);
                 break;
+            case DOWNLOAD:
+                sendFile(message);
+                break;
             case WHISPER:
                 whisper(message);
                 break;
@@ -177,30 +189,86 @@ public class SocketProcess implements Runnable {
         }
     }
 
+    private void sendFile(Message message) {
+        String[] parts = message.getPayload().split(" ", 2);
+        if (parts.length != 1) {
+            sendMessage(Command.BAD_RESPONSE, "Invalid number of arguments passed");
+            return;
+        }
+        String filename = parts[0];
+        File file = new File(FILE_DIR + filename);
+        if (file.exists()) {
+            try {
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                String base64 = Base64.getEncoder().encodeToString(bytes);
+
+                sendMessage(Command.GOOD_RESPONSE, base64 + ' ' + Checksum.getMD5Checksum(file));
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                sendMessage(Command.BAD_RESPONSE, e.getMessage());
+            }
+        } else {
+            sendMessage(Command.BAD_RESPONSE, String.format("Request file '%s' not found", filename));
+        }
+    }
+
     private void receiveFile(Message message) {
-        String[] parts = message.getPayload().split(" ", 3);
-        String to = parts[0];
-        String filename = parts[1];
-        String base64 = parts[2];
+        String[] parts = message.getPayload().split(" ");
+        if (parts.length != 4) {
+            sendMessage(Command.BAD_RESPONSE, "Invalid number of arguments passed");
+            return;
+        }
 
-        byte[] bytes = Base64.getDecoder().decode(base64.getBytes());
+        String toUsername = parts[0];
 
-        File file = new File("files/" + filename);
+        SocketProcess to = getUserFromUsername(toUsername);
+        if (to != null) {
+            String filename = parts[1];
+            byte[] bytes = Base64.getDecoder().decode(parts[2]);
+            String checksum = parts[3];
+
+            try {
+                writeFile(filename, bytes, checksum);
+                double fileSize = bytes.length / 1024. / 1024.;
+                String amountMegabytes = String.format(Locale.US, "%.4f", fileSize);
+                sendMessage(Command.GOOD_RESPONSE, "File uploaded");
+                to.sendMessage(Command.FILE, username + ' ' + filename + ' ' + amountMegabytes);
+            } catch (Exception e) {
+                sendMessage(Command.BAD_RESPONSE, e.getMessage());
+                System.err.println(e.getMessage());
+            }
+        } else {
+            sendMessage(Command.BAD_RESPONSE, "User with username '" + toUsername + "' does not exist");
+        }
+    }
+
+    private void writeFile(String filename, byte[] bytes, String checksum) throws Exception {
+        File downloads = new File(FILE_DIR);
+        if (!downloads.exists() && !downloads.mkdir()) {
+            throw new Exception(String.format("Error trying to create the '%s' directory", FILE_DIR));
+        }
+
+        File file = new File(FILE_DIR + filename);
         int count = 0;
         while (file.exists()) {
-            file = new File("files/" + count++ + '_' + filename);
+            file = new File(FILE_DIR + count++ + '_' + filename);
         }
-        try {
-            boolean created = file.createNewFile();
-            if (created) {
-                FileWriter writer = new FileWriter(file);
-                for (byte aByte : bytes) {
-                    writer.write(aByte);
-                }
-                writer.close();
+        boolean created = file.createNewFile();
+        if (created) {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            FileWriter writer = new FileWriter(file);
+            for (byte b : bytes) {
+                md.update(b);
+                writer.write(b);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            writer.close();
+
+            String fileChecksum = Checksum.bytesToString(md.digest());
+            if (!checksum.equals(fileChecksum)) {
+                throw new Exception("Uploaded file does not match given checksum");
+            }
+        } else {
+            throw new Exception("File not uploaded");
         }
     }
 

@@ -1,4 +1,5 @@
-package server;
+import model.Room;
+import process.SocketProcess;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -30,7 +31,6 @@ public class MyServer {
     public MyServer(int port) throws IOException {
         ArrayList<SocketProcess> clients = new ArrayList<>();
         ArrayList<Room> rooms = new ArrayList<>();
-
 
         rooms.add(new Room("owo"));
         rooms.add(new Room("swag"));

@@ -9,12 +9,20 @@ import model.Channel;
 import model.MainChannel;
 import model.RoomChannel;
 import model.UserChannel;
+import util.Checksum;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.util.Base64;
+import java.util.Locale;
 
 public class MainScreen extends JFrame {
+    private static final String DOWNLOAD_FOLDER = "downloads/";
     private final SocketHelper helper;
     private int pingTimout = 30000; // Default afk timeout in ms
     private JPanel mainPanel;
@@ -68,6 +76,9 @@ public class MainScreen extends JFrame {
                 .send());
 
         helper.addOnReceivedListener(message -> {
+            String username;
+            String from;
+
             switch (message.getCommand()) {
                 case PING:
                     if (System.currentTimeMillis() - lastActivity <= pingTimout) {
@@ -93,7 +104,7 @@ public class MainScreen extends JFrame {
                     channelPanel.addRoom(new RoomChannel(helper, message.getPayload()));
                     break;
                 case WHISPER:
-                    String from = message.getPayload().split(" ", 2)[0];
+                    from = message.getPayload().split(" ", 2)[0];
                     UserChannel userChannel = channelPanel.getChannelFromUsername(from);
                     messageChannel(userChannel, message);
                     break;
@@ -113,7 +124,7 @@ public class MainScreen extends JFrame {
                     messageChannel(channelPanel.getMain(), message);
                     break;
                 case JOINED_SERVER:
-                    String username = message.getPayload().split(" ", 2)[0];
+                    username = message.getPayload().split(" ", 2)[0];
                     channelPanel.addUser(new UserChannel(helper, username));
                     message.setCommand(Command.SERVER);
                     chatPanel.addMessage(message, false);
@@ -131,10 +142,10 @@ public class MainScreen extends JFrame {
                     // If type is '1' someone got kicked
                     if (message.getPayload().startsWith("1")) {
                         // Get the part after the type, aka the username
-                        String username1 = message.getPayload().split(" ", 3)[1];
+                        username = message.getPayload().split(" ", 3)[1];
                         //
-                        chatPanel.addMessage(new Message(Command.SERVER, username1 + " was kicked..."), true);
-                        if (Shared.username.equals(username1)) {
+                        chatPanel.addMessage(new Message(Command.SERVER, username + " was kicked..."), true);
+                        if (Shared.username.equals(username)) {
                             JOptionPane.showMessageDialog(null, "You were kicked from the chat!", "KICKED", JOptionPane.ERROR_MESSAGE);
                             channelPanel.gotoMain();
                         }
@@ -143,6 +154,34 @@ public class MainScreen extends JFrame {
                     }
                     kickPopup = false;
                     break;
+                case FILE:
+                    // Received a file
+                    String[] parts = message.getPayload().split(" ", 4);
+                    from = parts[0];
+                    String filename = parts[1];
+                    double fileSize = Double.parseDouble(parts[2]);
+
+                    SwingUtilities.invokeLater(() -> {
+                        int chosen = JOptionPane.showConfirmDialog(null, String.format(Locale.US,
+                                "You received a file from %s." +
+                                        "It has a size of %fmb." +
+                                        "Download file?", from, fileSize), "Download", JOptionPane.YES_NO_OPTION);
+                        if (chosen == JOptionPane.YES_OPTION) {
+                            Request.build(helper)
+                                    .setCommand(Command.DOWNLOAD)
+                                    .setPayload(filename)
+                                    .setOnResponse((success, message2) -> {
+                                        if (success) {
+                                            String[] parts2 = message2.getPayload().split(" ", 2);
+                                            String base64 = parts2[0];
+                                            String checksum = parts2[1];
+                                            downloadFile(filename, Base64.getDecoder().decode(base64), checksum);
+                                        }
+                                        return false;
+                                    })
+                                    .send();
+                        }
+                    });
             }
         });
 
@@ -186,16 +225,20 @@ public class MainScreen extends JFrame {
         helper.setOnSendListener(message -> lastActivity = System.currentTimeMillis());
     }
 
-    private void messageChannel(Channel channel, Message message) {
+    private void messageChannel(Channel channel, Message message, boolean save) {
         if (channel != null) {
             if (chatPanel.currentChannel() != channel) {
                 channel.addNotification();
-                channel.addMessage(message);
+                chatPanel.addMessage(message, save);
                 channelPanel.refreshTabNotificationCount();
             } else {
-                chatPanel.addMessage(message);
+                chatPanel.addMessage(message, save);
             }
         }
+    }
+
+    private void messageChannel(Channel channel, Message message) {
+        messageChannel(channel, message, true);
     }
 
     private void setupJFrame() {
@@ -307,6 +350,42 @@ public class MainScreen extends JFrame {
         dialog.pack();
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
+    }
+
+    private void downloadFile(String filename, byte[] bytes, String checksum) {
+        File downloads = new File(DOWNLOAD_FOLDER);
+        if (!downloads.exists() && !downloads.mkdir()) {
+            messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, String.format("Unable to create '%s' folder", DOWNLOAD_FOLDER)), false);
+            return;
+        }
+
+        File file = new File(DOWNLOAD_FOLDER + filename);
+        int count = 0;
+        while (file.exists()) {
+            file = new File(DOWNLOAD_FOLDER + count++ + '_' + filename);
+        }
+        try {
+            boolean created = file.createNewFile();
+            if (created) {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                FileWriter writer = new FileWriter(file);
+                for (byte b : bytes) {
+                    md.update(b);
+                    writer.write(b);
+                }
+                writer.close();
+
+                String fileChecksum = Checksum.bytesToString(md.digest());
+                if (!checksum.equals(fileChecksum)) {
+                    throw new Exception("Uploaded file does not match given checksum");
+                }
+            } else {
+                throw new Exception("File not uploaded");
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Could not save file<br/>" + e.getMessage()), false);
+        }
     }
 
     public interface CommandListener {
