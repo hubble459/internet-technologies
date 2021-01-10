@@ -27,14 +27,16 @@ public class Discord3 {
 
         // Restart when disconnected
         helper.setOnDisconnectListener(error -> {
-            System.out.println(error);
-            mainScreen.dispose();
-            boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
-            if (reconnect) {
-                connectAndLogin();
+            SwingUtilities.invokeLater(() -> {
+                System.out.println(error);
+                mainScreen.dispose();
+                boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
+                if (reconnect) {
+                    connectAndLogin();
 
-                mainScreen = new MainScreen("Discord 3", helper);
-            }
+                    mainScreen = new MainScreen("Discord 3", helper);
+                }
+            });
         });
     }
 

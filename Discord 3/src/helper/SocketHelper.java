@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 public class SocketHelper implements Runnable {
+    private static final boolean ENABLE_LOGGING = true;
+    private static final List<Command> DONT_LOG = Arrays.asList(Command.PONG, Command.PING);
+
     private final ArrayDeque<Command> required;
     private final ArrayList<Interfaces.OnReceivedListener> onReceivedListeners;
     private final String ip;
@@ -57,7 +58,7 @@ public class SocketHelper implements Runnable {
 
             Message message = Message.fromLine(line);
 
-            for (Interfaces.OnReceivedListener onReceivedListener : onReceivedListeners) {
+            for (Interfaces.OnReceivedListener onReceivedListener : new ArrayList<>(onReceivedListeners)) {
                 new Thread(() -> onReceivedListener.onReceive(message)).start();
             }
 
@@ -100,18 +101,18 @@ public class SocketHelper implements Runnable {
     }
 
     public synchronized void syncSend(Request request) {
-        System.out.println("Sending: " + request);
+        log("Sending: ", request);
         if (request == null) return;
 
         long start = System.currentTimeMillis();
         while (busySending() || noPriority(request)) {
             try {
-                System.out.println("Waiting: " + request);
                 wait(5000);
+                log("Waiting: ", request);
 
                 // 30 seconds timeout
                 if (System.currentTimeMillis() - start >= 30000) {
-                    System.out.println("Timed out: " + this.request);
+                    log("Timed out: ", this.request);
                     this.request = null;
                 }
             } catch (InterruptedException e) {
@@ -123,6 +124,12 @@ public class SocketHelper implements Runnable {
         this.request = request;
 
         write();
+    }
+
+    private void log(String prefix, Request request) {
+        if (ENABLE_LOGGING && !DONT_LOG.contains(request.getMessage().getCommand())) {
+            System.out.println(prefix + request);
+        }
     }
 
     private synchronized void write() {
@@ -137,7 +144,10 @@ public class SocketHelper implements Runnable {
     }
 
     private synchronized void response(Message message) {
-        System.out.println("Response: " + message);
+        if (ENABLE_LOGGING && !DONT_LOG.contains(request.getMessage().getCommand())) {
+            System.out.println("Response: " + message);
+        }
+
         if (request != null) {
             boolean success = message.isSuccessful();
             Request.OnResponse listener = request.getOnResponse();
@@ -157,7 +167,7 @@ public class SocketHelper implements Runnable {
             request = null;
 
             notify();
-        } else {
+        } else if (ENABLE_LOGGING) {
             System.err.println("Response but no request?");
         }
     }
@@ -171,7 +181,6 @@ public class SocketHelper implements Runnable {
             case RESTART:
                 closeSocket();
                 try {
-                    System.out.println("Reconnecting: " + message);
                     connect();
                 } catch (IOException e) {
                     e.printStackTrace();

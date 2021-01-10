@@ -16,7 +16,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Locale;
@@ -24,7 +23,7 @@ import java.util.Locale;
 public class MainScreen extends JFrame {
     private static final String DOWNLOAD_FOLDER = "downloads/";
     private final SocketHelper helper;
-    private int pingTimout = 30000; // Default afk timeout in ms
+    private int pingTimeout = 30000; // Default afk timeout in ms
     private JPanel mainPanel;
     private ChannelPanel channelPanel;
     private ChatPanel chatPanel;
@@ -81,7 +80,8 @@ public class MainScreen extends JFrame {
 
             switch (message.getCommand()) {
                 case PING:
-                    if (System.currentTimeMillis() - lastActivity <= pingTimout) {
+                    long difference = System.currentTimeMillis() - lastActivity;
+                    if (difference <= pingTimeout) {
                         Request.build(helper)
                                 .setCommand(Command.PONG)
                                 .send();
@@ -89,10 +89,10 @@ public class MainScreen extends JFrame {
                     break;
                 case BROADCAST:
                     Channel main = channelPanel.getMain();
-                    main.addMessage(message);
                     if (chatPanel.currentChannel() == main) {
                         chatPanel.addMessage(message);
                     } else {
+                        main.addMessage(message);
                         main.addNotification();
                         channelPanel.refreshTabNotificationCount();
                     }
@@ -222,7 +222,11 @@ public class MainScreen extends JFrame {
                 })
                 .send();
 
-        helper.setOnSendListener(message -> lastActivity = System.currentTimeMillis());
+        helper.setOnSendListener(message -> {
+            if (message.getCommand() != Command.PONG) {
+                lastActivity = System.currentTimeMillis();
+            }
+        });
     }
 
     private void messageChannel(Channel channel, Message message, boolean save) {
@@ -305,7 +309,7 @@ public class MainScreen extends JFrame {
                 .addActionListener(e -> {
                     Integer millis = (Integer) JOptionPane.showInputDialog(null, "If you have not had any activity in the amount of milliseconds below, you will be timed out", "Timout Milliseconds", JOptionPane.PLAIN_MESSAGE, null, milliOptions, milliOptions[5]);
                     if (millis != null) {
-                        pingTimout = millis;
+                        pingTimeout = millis;
                     }
                 });
 

@@ -63,7 +63,7 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
             voted = true;
             Request.build(helper)
                     .setCommand(Command.VOTE_SKIP)
-                    .setOnResponse((success, message) -> success)
+                    .setOnResponse((success, message) -> !success)
                     .setMaxRetries(5)
                     .send();
         }
@@ -84,7 +84,7 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
 
                 Request.build(helper)
                         .setMessage(Command.VOTE_KICK_USER, selected)
-                        .setOnResponse((success, message) -> success)
+                        .setOnResponse((success, message) -> !success)
                         .setMaxRetries(5)
                         .send();
             }
