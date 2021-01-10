@@ -19,6 +19,7 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
     private JButton buttonCancel;
     private JButton buttonVote;
     private JList<String> voteList;
+    private boolean voted;
 
     public KickPanel(SocketHelper helper) {
         setContentPane(contentPane);
@@ -58,9 +59,14 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
     }
 
     private void skip() {
-        Request.build(helper)
-                .setCommand(Command.VOTE_SKIP)
-                .send();
+        if (!voted) {
+            voted = true;
+            Request.build(helper)
+                    .setCommand(Command.VOTE_SKIP)
+                    .setOnResponse((success, message) -> success)
+                    .setMaxRetries(5)
+                    .send();
+        }
     }
 
     private void exit() {
@@ -69,14 +75,19 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
     }
 
     private void vote() {
-        String selected = voteList.getSelectedValue();
-        if (selected != null) {
-            selected = selected.split(" ", 2)[0];
-            selected = selected.substring("<html>".length());
+        if (!voted) {
+            voted = true;
+            String selected = voteList.getSelectedValue();
+            if (selected != null) {
+                selected = selected.split(" ", 2)[0];
+                selected = selected.substring("<html>".length());
 
-            Request.build(helper)
-                    .setMessage(Command.VOTE_KICK, selected)
-                    .send();
+                Request.build(helper)
+                        .setMessage(Command.VOTE_KICK_USER, selected)
+                        .setOnResponse((success, message) -> success)
+                        .setMaxRetries(5)
+                        .send();
+            }
         }
     }
 
@@ -103,6 +114,7 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
 
     @Override
     public void onReceive(Message message) {
+        System.out.println(message);
         switch (message.getCommand()) {
             case JOINED_ROOM:
                 String username = message.getPayload().split(" ", 2)[0];

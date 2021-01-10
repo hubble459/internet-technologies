@@ -64,6 +64,7 @@ public class Room {
     public void startKick(SocketProcess starter) {
         if (kickRequest == null) {
             kickRequest = new KickRequest(this);
+            starter.sendMessage(Command.GOOD_RESPONSE, roomName);
             broadcastInRoom(new Message(Command.VOTE_KICK, "Vote kick started"));
         } else {
             starter.sendMessage(Command.BAD_RESPONSE, "A kick has already been requested");

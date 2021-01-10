@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.io.IOException;
 
 public class Discord3 {
-    public static final int DEFAULT_PORT = 1338;
+    public static final int DEFAULT_PORT = 1337;
     private SocketHelper helper;
     private MainScreen mainScreen;
     private String error;
@@ -29,9 +29,12 @@ public class Discord3 {
         helper.setOnDisconnectListener(error -> {
             System.out.println(error);
             mainScreen.dispose();
-            JOptionPane.showMessageDialog(null, error, "Disconnected", JOptionPane.ERROR_MESSAGE);
-            connectAndLogin();
-            mainScreen = new MainScreen("Discord 3", helper);
+            boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
+            if (reconnect) {
+                connectAndLogin();
+
+                mainScreen = new MainScreen("Discord 3", helper);
+            }
         });
     }
 
@@ -39,7 +42,8 @@ public class Discord3 {
         helper = null;
 
         do {
-            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "86.87.206.20:" + DEFAULT_PORT);
+            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "0.0.0.0:" + DEFAULT_PORT);
+//            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "86.87.206.20:" + DEFAULT_PORT);
             if (ip == null /* Canceled */) {
                 System.exit(0);
                 return;

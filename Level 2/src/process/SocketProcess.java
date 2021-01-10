@@ -118,7 +118,6 @@ public class SocketProcess implements Runnable {
                 break;
             case VOTE_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
-                    sendMessage(Command.GOOD_RESPONSE, room.getRoomName());
                     room.startKick(this);
                 }
                 break;
@@ -189,6 +188,16 @@ public class SocketProcess implements Runnable {
         }
     }
 
+    /**
+     * Client's Download
+     * <p>
+     * Server sends a file to a client
+     *
+     * MESSAGE: [filename]
+     * RESPONSE: [base64] [checksum]
+     *
+     * @param message message witch contains the file, filename, the recipient and a checksum
+     */
     private void sendFile(Message message) {
         String[] parts = message.getPayload().split(" ", 2);
         if (parts.length != 1) {
@@ -212,6 +221,15 @@ public class SocketProcess implements Runnable {
         }
     }
 
+    /**
+     * Client's Upload
+     * <p>
+     * Server received a file from a client
+     *
+     * MESSAGE: [recipient] [filename] [file_in_base64] [checksum]
+     *
+     * @param message message witch contains the file, filename, the recipient and a checksum
+     */
     private void receiveFile(Message message) {
         String[] parts = message.getPayload().split(" ");
         if (parts.length != 4) {

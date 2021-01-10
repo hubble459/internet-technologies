@@ -19,6 +19,7 @@ public class ChatPanel {
     private JTextField textField;
     private JButton sendButton;
     private JButton uploadButton;
+    private JButton kickButton;
     private Channel channel;
     private MainScreen.CommandListener commandListener;
 
@@ -31,7 +32,7 @@ public class ChatPanel {
         textField.addActionListener(e -> sendFromTextField());
         sendButton.addActionListener(e -> sendFromTextField());
         uploadButton.addActionListener(e -> uploadFile());
-//        uploadButton.setVisible(false);
+        kickButton.addActionListener((e -> commandListener.command(new Message(Command.VOTE_KICK, ""))));
     }
 
     private void uploadFile() {
@@ -88,6 +89,7 @@ public class ChatPanel {
         if (this.channel != channel) {
             this.channel = channel;
             uploadButton.setVisible(channel.isPM());
+            kickButton.setVisible(channel.isRoom());
             channel.clearNotifications();
             SwingUtilities.invokeLater(() -> {
                 messages.clear();

@@ -39,7 +39,7 @@ public class MainScreen extends JFrame {
         channelPanel.setOnChannelSelect(channel -> {
             if (chatPanel.currentChannel() != null
                     && chatPanel.currentChannel() != channel) {
-                if (channel.isMain()) {
+                if (channel.isMain() || channel.isPM()) {
                     Request.build(helper)
                             .setCommand(Command.LEAVE_ROOM)
                             .send();

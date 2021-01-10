@@ -14,6 +14,7 @@ public class ChatPanel {
     private JPanel chatPanel;
     private JList<Message> messageList;
     private JTextField textField;
+    private JButton kickButton;
     private JButton button;
     private Channel channel;
 
