@@ -26,22 +26,13 @@ public class Discord3 {
         mainScreen = new MainScreen("Discord 3", helper);
 
         // Restart when disconnected
-        helper.setOnDisconnectListener(error -> {
-            SwingUtilities.invokeLater(() -> {
-                System.out.println(error);
-                mainScreen.dispose();
-                boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
-                if (reconnect) {
-                    connectAndLogin();
-
-                    mainScreen = new MainScreen("Discord 3", helper);
-                }
-            });
-        });
+        helper.setOnDisconnectListener(this::onDisconnect);
     }
 
     public void connectAndLogin() {
         helper = null;
+        loggedIn = false;
+        error = "";
 
         do {
             String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "0.0.0.0:" + DEFAULT_PORT);
@@ -88,5 +79,20 @@ public class Discord3 {
                 }
             }
         } while (helper == null);
+    }
+
+    private void onDisconnect(String error) {
+        SwingUtilities.invokeLater(() -> {
+            System.err.println(error);
+            mainScreen.dispose();
+            boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
+            if (reconnect) {
+                connectAndLogin();
+
+                helper.setOnDisconnectListener(this::onDisconnect);
+
+                mainScreen = new MainScreen("Discord 3", helper);
+            }
+        });
     }
 }

@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Locale;
 
 public class MainScreen extends JFrame {
@@ -81,10 +82,14 @@ public class MainScreen extends JFrame {
 
             switch (message.getCommand()) {
                 case PING:
+                    // 100, 97
+                    // 3 <= 3
                     long difference = System.currentTimeMillis() - lastActivity;
                     if (difference <= pingTimeout) {
                         Request.build(helper)
                                 .setCommand(Command.PONG)
+                                .setOnResponse((success, message1) -> !success)
+                                .setMaxRetries(2)
                                 .send();
                     }
                     break;
@@ -305,6 +310,7 @@ public class MainScreen extends JFrame {
                 60000 * 5,
                 60000 * 10,
                 60000 * 30,
+                60000 * 60,
         };
         options.add("Timeout")
                 .addActionListener(e -> {
