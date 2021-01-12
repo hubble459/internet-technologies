@@ -15,11 +15,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
-import java.util.Date;
 import java.util.Locale;
 
 public class MainScreen extends JFrame {
@@ -265,7 +263,7 @@ public class MainScreen extends JFrame {
         pack();
         // Set location of the frame to the center of the screen
         setLocationRelativeTo(null);
-        // Disable resizing because layout get's fuckie when it's resized
+        // Disable resizing because layout gets fuckie when it's resized
         setResizable(false);
         // Show the JFrame
         setVisible(true);
@@ -389,7 +387,7 @@ public class MainScreen extends JFrame {
 //                    writer.write(b);
 //                }
 //                writer.close();
-            } catch (IOException uwu){
+            } catch (IOException uwu) {
                 messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Could not save file<br/>" + uwu.getMessage()), false);
             }
         } catch (Exception e) {

@@ -21,8 +21,7 @@ public class MainScreen extends JFrame {
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setContentPane(mainPanel);
-        ImageIcon img = new ImageIcon("./Discord 2/uwu.jpg");
-        setIconImage(img.getImage());
+        setIconImage(new ImageIcon("./Discord 2/uwu.jpg").getImage());
         setupMenu();
         pack();
         setLocationRelativeTo(null);
