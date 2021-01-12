@@ -8,7 +8,6 @@ import util.Checksum;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Locale;
@@ -210,8 +209,9 @@ public class SocketProcess implements Runnable {
             try {
                 byte[] bytes = Files.readAllBytes(file.toPath());
                 String base64 = Base64.getEncoder().encodeToString(bytes);
+                bytes = Checksum.getChecksumBytes(file);
 
-                sendMessage(Command.GOOD_RESPONSE, base64 + ' ' + Checksum.getMD5Checksum(file));
+                sendMessage(Command.GOOD_RESPONSE, base64 + ' ' + Checksum.bytesToString(bytes));
             } catch (Exception e) {
                 System.err.println(e.getMessage());
                 sendMessage(Command.BAD_RESPONSE, e.getMessage());
@@ -273,15 +273,9 @@ public class SocketProcess implements Runnable {
         }
         boolean created = file.createNewFile();
         if (created) {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            FileWriter writer = new FileWriter(file);
-            for (byte b : bytes) {
-                md.update(b);
-                writer.write(b);
-            }
-            writer.close();
-
-            String fileChecksum = Checksum.bytesToString(md.digest());
+            Files.write(file.toPath(), bytes);
+            bytes = Checksum.getChecksumBytes(bytes);
+            String fileChecksum = Checksum.bytesToString(bytes);
             if (!checksum.equals(fileChecksum)) {
                 throw new Exception("Uploaded file does not match given checksum");
             }

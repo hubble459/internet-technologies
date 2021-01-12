@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Checksum {
-    private static byte[] createChecksum(File file) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getChecksumBytes(File file) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md);
         while (dis.read() != -1);
@@ -16,16 +16,19 @@ public class Checksum {
     }
 
     // a byte array to a HEX string
-    public static String getMD5Checksum(File file) throws Exception {
-        byte[] bytes = createChecksum(file);
-        return bytesToString(bytes);
-    }
-
-    public static String bytesToString(byte[] bytes) throws Exception {
+    public static String bytesToString(byte[] bytes) {
         StringBuilder result = new StringBuilder();
         for (byte value : bytes) {
             result.append(Integer.toString((value & 0xff) + 0x100, 16).substring(1));
         }
         return result.toString();
+    }
+
+    public static byte[] getChecksumBytes(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        for (byte aByte : bytes) {
+            md.update(aByte);
+        }
+        return md.digest();
     }
 }
