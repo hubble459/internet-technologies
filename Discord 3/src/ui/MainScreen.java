@@ -16,7 +16,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.MessageDigest;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Locale;
 
@@ -362,29 +363,28 @@ public class MainScreen extends JFrame {
             messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, String.format("Unable to create '%s' folder", DOWNLOAD_FOLDER)), false);
             return;
         }
-
-        File file = new File(DOWNLOAD_FOLDER + filename);
-        int count = 0;
-        while (file.exists()) {
-            file = new File(DOWNLOAD_FOLDER + count++ + '_' + filename);
-        }
         try {
-            boolean created = file.createNewFile();
-            if (created) {
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                FileWriter writer = new FileWriter(file);
-                for (byte b : bytes) {
-                    md.update(b);
-                    writer.write(b);
-                }
-                writer.close();
+            String fileChecksum = Checksum.getMD5Checksum(bytes);
+            if (!checksum.equals(fileChecksum)) {
+                throw new Exception("Uploaded file does not match given checksum");
+            }
 
-                String fileChecksum = Checksum.bytesToString(md.digest());
-                if (!checksum.equals(fileChecksum)) {
-                    throw new Exception("Uploaded file does not match given checksum");
-                }
-            } else {
-                throw new Exception("File not uploaded");
+            File file = new File(DOWNLOAD_FOLDER + filename);
+            int count = 0;
+            while (file.exists()) {
+                file = new File(DOWNLOAD_FOLDER + count++ + '_' + filename);
+            }
+
+//            boolean created = file.createNewFile();
+            try {
+                Files.write(file.toPath(), bytes);
+//                FileWriter writer = new FileWriter(file);
+//                for (byte b : bytes) {
+//                    writer.write(b);
+//                }
+//                writer.close();
+            } catch (IOException uwu){
+                messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Could not save file<br/>" + uwu.getMessage()), false);
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());

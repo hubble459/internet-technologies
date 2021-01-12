@@ -12,6 +12,7 @@ public class Checksum {
         MessageDigest md = MessageDigest.getInstance("MD5");
         DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md);
         while (dis.read() != -1);
+        dis.close();
         return md.digest();
     }
 
@@ -21,11 +22,21 @@ public class Checksum {
         return bytesToString(bytes);
     }
 
-    public static String bytesToString(byte[] bytes) throws Exception {
+    public static String getMD5Checksum(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        for (byte aByte : bytes) {
+            md.update(aByte);
+        }
+        return bytesToString(md.digest());
+    }
+
+    public static String bytesToString(byte[] bytes) {
         StringBuilder result = new StringBuilder();
         for (byte value : bytes) {
             result.append(Integer.toString((value & 0xff) + 0x100, 16).substring(1));
         }
         return result.toString();
     }
+
+
 }

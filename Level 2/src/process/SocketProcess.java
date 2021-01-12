@@ -191,7 +191,7 @@ public class SocketProcess implements Runnable {
      * Client's Download
      * <p>
      * Server sends a file to a client
-     *
+     * <p>
      * MESSAGE: [filename]
      * RESPONSE: [base64] [checksum]
      *
@@ -208,10 +208,10 @@ public class SocketProcess implements Runnable {
         if (file.exists()) {
             try {
                 byte[] bytes = Files.readAllBytes(file.toPath());
-                String base64 = Base64.getEncoder().encodeToString(bytes);
-                bytes = Checksum.getChecksumBytes(file);
 
-                sendMessage(Command.GOOD_RESPONSE, base64 + ' ' + Checksum.bytesToString(bytes));
+                String base64 = new String(Base64.getEncoder().encode(bytes));
+
+                sendMessage(Command.GOOD_RESPONSE, base64 + ' ' + Checksum.getMD5Checksum(bytes));
             } catch (Exception e) {
                 System.err.println(e.getMessage());
                 sendMessage(Command.BAD_RESPONSE, e.getMessage());
@@ -225,7 +225,7 @@ public class SocketProcess implements Runnable {
      * Client's Upload
      * <p>
      * Server received a file from a client
-     *
+     * <p>
      * MESSAGE: [recipient] [filename] [file_in_base64] [checksum]
      *
      * @param message message witch contains the file, filename, the recipient and a checksum
@@ -271,16 +271,11 @@ public class SocketProcess implements Runnable {
         while (file.exists()) {
             file = new File(FILE_DIR + count++ + '_' + filename);
         }
-        boolean created = file.createNewFile();
-        if (created) {
-            Files.write(file.toPath(), bytes);
-            bytes = Checksum.getChecksumBytes(bytes);
-            String fileChecksum = Checksum.bytesToString(bytes);
-            if (!checksum.equals(fileChecksum)) {
-                throw new Exception("Uploaded file does not match given checksum");
-            }
-        } else {
-            throw new Exception("File not uploaded");
+
+        Files.write(file.toPath(), bytes);
+        String fileChecksum = Checksum.getMD5Checksum(bytes);
+        if (!checksum.equals(fileChecksum)) {
+            throw new Exception("Uploaded file does not match given checksum");
         }
     }
 
