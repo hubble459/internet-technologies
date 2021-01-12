@@ -255,8 +255,7 @@ public class MainScreen extends JFrame {
         // Main content pane is mainPanel
         setContentPane(mainPanel);
         // Set the window icon
-        ImageIcon img = new ImageIcon("./Discord 3/uwu.jpg");
-        setIconImage(img.getImage());
+        setIconImage(new ImageIcon("./Discord 3/uwu.jpg").getImage());
         // Setup the toolbar menu
         setupMenu();
         // Pack all items nicely into the frame
