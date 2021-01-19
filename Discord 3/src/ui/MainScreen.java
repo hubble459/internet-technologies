@@ -60,14 +60,17 @@ public class MainScreen extends JFrame {
 
         chatPanel.setCommandListener(message -> Request.build(helper)
                 .setMessage(message)
-                .setOnResponse((success, message1) -> {
+                .setOnResponse((success, msg) -> {
                     if (!success) {
-                        message1.setCommand(Command.SERVER);
-                        chatPanel.addMessage(message1);
+                        msg.setCommand(Command.SERVER);
+                        chatPanel.addMessage(msg);
                     } else if (message.getCommand() == Command.WHISPER) {
                         String to = message.getPayload().split(" ", 2)[0];
                         String payload = Shared.username + message.getPayload().substring(to.length());
                         message.setPayload(payload);
+                        messageChannel(chatPanel.currentChannel(), message);
+                    } else if (Shared.stupidJSServer && message.getCommand() == Command.BROADCAST) {
+                        message.setPayload(Shared.username + " " + message.getPayload());
                         messageChannel(chatPanel.currentChannel(), message);
                     }
                     return false;
@@ -80,8 +83,6 @@ public class MainScreen extends JFrame {
 
             switch (message.getCommand()) {
                 case PING:
-                    // 100, 97
-                    // 3 <= 3
                     long difference = System.currentTimeMillis() - lastActivity;
                     if (difference <= pingTimeout) {
                         Request.build(helper)
@@ -221,6 +222,8 @@ public class MainScreen extends JFrame {
                                 channelPanel.addUser(new UserChannel(user));
                             }
                         }
+                    } else {
+                        Shared.stupidJSServer = true;
                     }
                     return false;
                 })
@@ -235,9 +238,9 @@ public class MainScreen extends JFrame {
 
     private void messageChannel(Channel channel, Message message, boolean save) {
         if (channel != null) {
-            if (chatPanel.currentChannel() != channel) {
+            if (save && chatPanel.currentChannel() != channel) {
+                channel.addMessage(message);
                 channel.addNotification();
-                chatPanel.addMessage(message, save);
                 channelPanel.refreshTabNotificationCount();
             } else {
                 chatPanel.addMessage(message, save);
@@ -279,18 +282,23 @@ public class MainScreen extends JFrame {
         // Add a quit button to the options
         options.add("Quit")
                 // When clicked, send a quit request
-                .addActionListener(e -> Request.build(helper)
-                        .setCommand(Command.QUIT)
-                        .setOnResponse((success, message) -> {
-                            if (success) {
-                                // If successful stop the Java Program
-                                JOptionPane.showMessageDialog(null, "Quit successfully", "Quited", JOptionPane.PLAIN_MESSAGE);
-                                System.exit(0);
-                            }
-                            return false;
-                        })
-                        // Send the message
-                        .send());
+                .addActionListener(e -> {
+                    Shared.quit = true;
+                    Request.build(helper)
+                            .setCommand(Command.QUIT)
+                            .setOnResponse((success, message) -> {
+                                if (success) {
+                                    // If successful stop the Java Program
+                                    JOptionPane.showMessageDialog(null, "Quit successfully", "Quited", JOptionPane.PLAIN_MESSAGE);
+                                    System.exit(0);
+                                } else {
+                                    Shared.quit = false;
+                                }
+                                return false;
+                            })
+                            // Send the message
+                            .send();
+                });
 
         // Add a help button
         options.add("Help");

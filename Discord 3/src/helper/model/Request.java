@@ -31,7 +31,7 @@ public class Request {
             synchronized (lock) {
                 lock.notify();
             }
-        }).send();
+        }).syncSend();
         try {
             synchronized (lock) {
                 lock.wait();

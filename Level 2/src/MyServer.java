@@ -33,18 +33,10 @@ public class MyServer {
         ArrayList<SocketProcess> clients = new ArrayList<>();
         ArrayList<Room> rooms = new ArrayList<>();
 
-        rooms.add(new Room("Shrek"));
-        rooms.add(new Room("Waifu"));
-        rooms.add(new Room("Toneel"));
-        rooms.add(new Room("YoungOnes"));
-        rooms.add(new Room("Fuckie"));
-        rooms.add(new Room("Underaged"));
-        rooms.add(new Room("Swag"));
-        rooms.add(new Room("UwUs"));
-        rooms.add(new Room("Hotel"));
-        rooms.add(new Room("OwOs"));
-        rooms.add(new Room("Emojis"));
         rooms.add(new Room("Random"));
+        rooms.add(new Room("Waifus"));
+        rooms.add(new Room("Java"));
+        rooms.add(new Room("Room"));
 
         // Create a socket to wait for clients.
         ServerSocket serverSocket = new ServerSocket(port);

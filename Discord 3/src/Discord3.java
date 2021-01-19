@@ -9,6 +9,7 @@ import java.io.IOException;
 
 public class Discord3 {
     public static final int DEFAULT_PORT = 1337;
+    public static final String DEFAULT_IP = "127.0.0.1";
     private SocketHelper helper;
     private MainScreen mainScreen;
     private String error;
@@ -35,7 +36,7 @@ public class Discord3 {
         error = "";
 
         do {
-            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "0.0.0.0:" + DEFAULT_PORT);
+            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", DEFAULT_IP + ":" + DEFAULT_PORT);
 //            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "86.87.206.20:" + DEFAULT_PORT);
             if (ip == null /* Canceled */) {
                 System.exit(0);
@@ -82,17 +83,19 @@ public class Discord3 {
     }
 
     private void onDisconnect(String error) {
-        SwingUtilities.invokeLater(() -> {
-            System.err.println(error);
-            mainScreen.dispose();
-            boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
-            if (reconnect) {
-                connectAndLogin();
+        if (!Shared.quit) {
+            SwingUtilities.invokeLater(() -> {
+                System.err.println(error);
+                mainScreen.dispose();
+                boolean reconnect = JOptionPane.showConfirmDialog(null, error + "\nReconnect?", "Disconnected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) == JOptionPane.YES_OPTION;
+                if (reconnect) {
+                    connectAndLogin();
 
-                helper.setOnDisconnectListener(this::onDisconnect);
+                    helper.setOnDisconnectListener(this::onDisconnect);
 
-                mainScreen = new MainScreen("Discord 3", helper);
-            }
-        });
+                    mainScreen = new MainScreen("Discord 3", helper);
+                }
+            });
+        }
     }
 }
