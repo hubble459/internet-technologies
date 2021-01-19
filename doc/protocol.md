@@ -18,8 +18,8 @@ s: 400 Please login first
 
 #### Status codes:
 
-- 2xx = Positief
-- 4xx = Error
+- 200 = Positief
+- 400 = Error
 
 #### Response:
 
