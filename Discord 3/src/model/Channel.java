@@ -9,14 +9,12 @@ import helper.model.Request;
 import java.util.ArrayList;
 
 public abstract class Channel {
-    private final SocketHelper helper;
     private final String name;
     private final ArrayList<Message> messages;
     private final Command command;
     private int notification;
 
-    public Channel(SocketHelper helper, String name, ChannelType type) {
-        this.helper = helper;
+    public Channel(String name, ChannelType type) {
         this.name = name;
         this.messages = new ArrayList<>();
         this.command = type.getCommand();

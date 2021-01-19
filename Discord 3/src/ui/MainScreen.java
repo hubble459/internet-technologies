@@ -105,7 +105,7 @@ public class MainScreen extends JFrame {
                     messageChannel(chatPanel.currentChannel(), message);
                     break;
                 case ROOM_CREATED:
-                    channelPanel.addRoom(new RoomChannel(helper, message.getPayload()));
+                    channelPanel.addRoom(new RoomChannel(message.getPayload()));
                     break;
                 case WHISPER:
                     from = message.getPayload().split(" ", 2)[0];
@@ -129,7 +129,7 @@ public class MainScreen extends JFrame {
                     break;
                 case JOINED_SERVER:
                     username = message.getPayload().split(" ", 2)[0];
-                    channelPanel.addUser(new UserChannel(helper, username));
+                    channelPanel.addUser(new UserChannel(username));
                     message.setCommand(Command.SERVER);
                     chatPanel.addMessage(message, false);
                     break;
@@ -191,7 +191,7 @@ public class MainScreen extends JFrame {
 
         // Make the main room
         // Used to sent and receive broadcasts
-        channelPanel.addRoom(new MainChannel(helper));
+        channelPanel.addRoom(new MainChannel());
         channelPanel.gotoMain();
 
         // Request a list of rooms
@@ -202,7 +202,7 @@ public class MainScreen extends JFrame {
                         // Add rooms to channelPanel
                         String[] rooms = message.getPayload().split(";");
                         for (String room : rooms) {
-                            channelPanel.addRoom(new RoomChannel(helper, room));
+                            channelPanel.addRoom(new RoomChannel(room));
                         }
                     }
                     return false;
@@ -218,7 +218,7 @@ public class MainScreen extends JFrame {
                         String[] users = message.getPayload().split(";");
                         for (String user : users) {
                             if (!user.equals(Shared.username)) {
-                                channelPanel.addUser(new UserChannel(helper, user));
+                                channelPanel.addUser(new UserChannel(user));
                             }
                         }
                     }
