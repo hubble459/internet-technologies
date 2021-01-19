@@ -2,6 +2,11 @@ package helper.model;
 
 import helper.Shared;
 
+/**
+ * A basic message to send to the server
+ * <p>
+ * Always has a Command and can also have a Payload
+ */
 public class Message {
     private final boolean isResponse;
     private final boolean isSuccessful;
@@ -19,10 +24,21 @@ public class Message {
         this(command, payload, false, false);
     }
 
+    /**
+     * Convert a line of text into a message
+     *
+     * @param line string
+     * @return Message
+     */
     public static Message fromLine(String line) {
         if (line == null || line.isEmpty()) {
             return null;
         } else {
+            /*
+             * Split the line in two parts
+             * The first part should aways be a Command or a status code
+             * The second part is the payload
+             * */
             String[] split = line.split(" ", 2);
             String commandString = split[0].toUpperCase();
             boolean isResponse = false;
@@ -35,6 +51,7 @@ public class Message {
             }
 
             Command command = Command.fromString(commandString);
+            if (command == null) return null;
             String payload = "";
             if (split.length > 1) {
                 payload = split[1];
@@ -59,15 +76,29 @@ public class Message {
         return command;
     }
 
+    public void setCommand(Command command) {
+        this.command = command;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
     @Override
     public String toString() {
         return command + " " + payload;
     }
 
+    /**
+     * Turn this message into HTML format
+     * Which could then be used by JFrame to show this message
+     *
+     * @return this message in HTML format
+     */
     public String toHTML() {
         String payload = this.payload;
 
-        if(command == Command.SERVER) {
+        if (command == Command.SERVER) {
             payload = "SERVER " + payload;
         }
 
@@ -78,16 +109,10 @@ public class Message {
             message = split[1];
         }
 
+        // If you send the message, the username will be blue else it will be black
         String color = username.equals(Shared.username) ? "blue" : "black";
+        // If it's a notification from server the color will be red
         if (username.equals("SERVER")) color = "red";
-        return "<html><body style='width: 300px'><strong style='font-size: 12px;color: " + color + "'>" + username + "</strong><br/>" + message + "</body></html>";
-    }
-
-    public void setCommand(Command command) {
-        this.command = command;
-    }
-
-    public void setPayload(String payload) {
-        this.payload = payload;
+        return "<html><body style='width: 250px'><strong style='font-size: 12px;color: " + color + "'>" + username + "</strong><br/>" + message + "</body></html>";
     }
 }

@@ -1,6 +1,10 @@
 package helper.model;
 
-
+/**
+ * Enumeration of commands
+ *
+ * These are the same as the ones on the server
+ */
 public enum Command {
     // COMMANDS
     USERS("USERS"), // USERS (get the list of users)
