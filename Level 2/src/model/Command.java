@@ -23,7 +23,7 @@ public enum Command {
     // NOTIFICATIONS
     INFO("INFO"), // (info message)
     PING("PING"), // (ping message)
-    DISCONNECTED("DCST"), // Disconnected
+    DISCONNECTED("DCSN"), // Disconnected (DICSONNECTEN)
     ROOM_CREATED("MADE"), // MADE <room_name> (to broadcast)
     VOTES("VOTES"), // VOTES <name> <votes>;<name> <votes>
     KICK_RESULT("KRES"), // KRES <type> <username> (to get the result of the kick)
