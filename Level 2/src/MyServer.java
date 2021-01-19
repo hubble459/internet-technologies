@@ -33,9 +33,18 @@ public class MyServer {
         ArrayList<SocketProcess> clients = new ArrayList<>();
         ArrayList<Room> rooms = new ArrayList<>();
 
-        rooms.add(new Room("owo"));
-        rooms.add(new Room("swag"));
-        rooms.add(new Room("shrek"));
+        rooms.add(new Room("Shrek"));
+        rooms.add(new Room("Waifu"));
+        rooms.add(new Room("Toneel"));
+        rooms.add(new Room("YoungOnes"));
+        rooms.add(new Room("Fuckie"));
+        rooms.add(new Room("Underaged"));
+        rooms.add(new Room("Swag"));
+        rooms.add(new Room("UwUs"));
+        rooms.add(new Room("Hotel"));
+        rooms.add(new Room("OwOs"));
+        rooms.add(new Room("Emojis"));
+        rooms.add(new Room("Random"));
 
         // Create a socket to wait for clients.
         ServerSocket serverSocket = new ServerSocket(port);
@@ -65,25 +74,19 @@ public class MyServer {
     @SuppressWarnings("ALL")
     private void heartbeat(SocketProcess client) {
         assert TIMEOUT >= -1;
-        assert TIMEOUT <= 3.6e6;
 
         if (TIMEOUT != -1) {
             // If timeout isn't -1 start heartbeat thread for client
             new Thread(() -> {
-                try {
+                do {
                     // Don't immediately pong after login
                     // So sleep for TIMEOUT ms
-                    Thread.sleep(TIMEOUT);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                do {
+                    sleep(TIMEOUT);
                     // Ping the client
                     client.ping();
                     try {
                         // Give time for response
-                        Thread.sleep(TIMEOUT);
+                        Thread.sleep(RESPONSE_TIME);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -98,5 +101,13 @@ public class MyServer {
 
     private void startProcess(SocketProcess process) {
         new Thread(process).start();
+    }
+
+    private void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

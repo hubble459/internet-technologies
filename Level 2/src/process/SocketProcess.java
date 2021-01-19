@@ -217,7 +217,7 @@ public class SocketProcess implements Runnable {
                 sendMessage(Command.BAD_RESPONSE, e.getMessage());
             }
         } else {
-            sendMessage(Command.BAD_RESPONSE, String.format("Request file '%s' not found", filename));
+            sendMessage(Command.BAD_RESPONSE, String.format("Requested file '%s' not found", filename));
         }
     }
 

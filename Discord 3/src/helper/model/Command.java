@@ -24,7 +24,7 @@ public enum Command {
     // NOTIFICATIONS
     INFO("INFO"), // (info message)
     PING("PING"), // (ping message)
-    DISCONNECTED("DCST"), // Disconnected
+    DISCONNECTED("DCSN"), // Disconnected (DICSONNECTEN)
     ROOM_CREATED("MADE"), // MADE <room_name> (to broadcast)
     VOTES("VOTES"), // VOTES <name> <votes>;<name> <votes>
     KICK_RESULT("KRES"), // KRES <type> <username> (to get the result of the kick)
@@ -32,6 +32,7 @@ public enum Command {
     JOINED_ROOM("JROOM"), // JROOM <username> <message> (joined the room)
     LEFT_ROOM("RLEFT"), // RLEFT <username> <message> (left the room)
     LEFT("LEFT"), // LEFT <username> <message> (left the server)
+    //STARTED_KICK("KICK"), // (vote kick started)
     //FILE("FILE"), // FILE <from> <filename> (when you received a file)
 
     // RESPONSES
