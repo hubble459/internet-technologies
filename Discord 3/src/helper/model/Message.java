@@ -72,16 +72,16 @@ public class Message {
         return payload;
     }
 
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
     public Command getCommand() {
         return command;
     }
 
     public void setCommand(Command command) {
         this.command = command;
-    }
-
-    public void setPayload(String payload) {
-        this.payload = payload;
     }
 
     @Override

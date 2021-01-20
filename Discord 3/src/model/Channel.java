@@ -1,13 +1,15 @@
 package model;
 
-import helper.Shared;
-import helper.SocketHelper;
 import helper.model.Command;
 import helper.model.Message;
-import helper.model.Request;
 
 import java.util.ArrayList;
 
+/**
+ * Channel
+ * <p>
+ * Class to make it easy to manage channels and talk in them
+ */
 public abstract class Channel {
     private final String name;
     private final ArrayList<Message> messages;

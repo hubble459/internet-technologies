@@ -30,11 +30,6 @@ public class Request {
         return new Builder(helper);
     }
 
-    public void retry() {
-        ++retries;
-        send();
-    }
-
     public static void sendAndWaitForResponse(Builder builder) {
         final Object lock = new Object();
         builder.lock(() -> {
@@ -49,6 +44,11 @@ public class Request {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void retry() {
+        ++retries;
+        send();
     }
 
     public Message getMessage() {
@@ -93,6 +93,13 @@ public class Request {
             // Lock thread while sending
             helper.syncSend(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                "message=" + message +
+                '}';
     }
 
     public interface OnResponse {
@@ -268,12 +275,5 @@ public class Request {
         public void syncSend() {
             create().syncSend();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Request{" +
-                "message=" + message +
-                '}';
     }
 }

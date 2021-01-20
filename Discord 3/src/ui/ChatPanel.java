@@ -12,6 +12,11 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.Base64;
 
+/**
+ * Chat part of the MainScreen
+ * <p>
+ * Takes user input and holds a list for server/client output
+ */
 public class ChatPanel {
     private final DefaultListModel<Message> messages;
     private JPanel chatPanel;
@@ -35,6 +40,9 @@ public class ChatPanel {
         kickButton.addActionListener((e -> commandListener.command(new Message(Command.VOTE_KICK, ""))));
     }
 
+    /**
+     * Upload a file
+     */
     private void uploadFile() {
         JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
         int returnValue = fileChooser.showOpenDialog(null);
@@ -60,20 +68,27 @@ public class ChatPanel {
         return channel;
     }
 
+    /**
+     * Send input
+     */
     public void sendFromTextField() {
         String text = textField.getText();
         if (text != null && !text.isEmpty()) {
-            if (text.startsWith("/")) {
-                Message message = Message.fromLine(text.substring(1));
+            // If its a command
+            if (commandListener != null && text.startsWith("/")) {
+                Message message = Message.fromLine(text.substring(1).toUpperCase());
                 if (message.getCommand() != null) {
+                    // Send command
                     commandListener.command(new Message(message.getCommand(), message.getPayload()));
                 } else {
                     addMessage(new Message(Command.SERVER, "'" + text.substring(1) + "' is not a valid command"));
                 }
             } else {
+                // If its a chat
                 if (channel == null) {
                     addMessage(new Message(Command.SERVER, "You are not in a channel"));
                 } else {
+                    // Send message
                     if (channel.isPM()) {
                         commandListener.command(new Message(channel.getCommand(), channel.getName() + " " + text));
                     } else {
@@ -82,18 +97,26 @@ public class ChatPanel {
                 }
             }
         }
+        // Clear input
         textField.setText("");
     }
 
     public void setChannel(Channel channel) {
+        // Don't do anything if this channel is already selected
         if (this.channel != channel) {
             this.channel = channel;
+            // Upload button should only be visible in a PM
             uploadButton.setVisible(channel.isPM());
+            // Kick button should only be visible in a room
             kickButton.setVisible(channel.isRoom());
+            // Clear channel notifications
             channel.clearNotifications();
             SwingUtilities.invokeLater(() -> {
+                // Clear chat
                 messages.clear();
+                // Add channel history to chat
                 messages.addAll(channel.getMessages());
+                // Scroll to last element
                 messageList.ensureIndexIsVisible(messages.getSize() - 1);
             });
         }
@@ -117,6 +140,9 @@ public class ChatPanel {
         });
     }
 
+    /**
+     * Render messages so they don't go off-screen
+     */
     static class CellRenderer extends DefaultListCellRenderer {
         public static final String HTML_1 = "<html><body style='width: ";
         public static final String HTML_2 = "px'>";

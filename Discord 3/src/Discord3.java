@@ -37,30 +37,36 @@ public class Discord3 {
 
         do {
             String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", DEFAULT_IP + ":" + DEFAULT_PORT);
-//            String ip = JOptionPane.showInputDialog(null, "IP adres:PORT", "86.87.206.20:" + DEFAULT_PORT);
             if (ip == null /* Canceled */) {
                 System.exit(0);
                 return;
             }
 
+            // Get port
             int port = DEFAULT_PORT;
             try {
+                // Try to get port from string
                 port = Integer.parseInt(ip.split(":", 2)[1]);
             } catch (Exception ignored) {
             }
+            // Get ip
             ip = ip.split(":", 2)[0];
 
             try {
+                // Create the helper
                 helper = new SocketHelper(ip, port);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Connection Error", "Error", JOptionPane.ERROR_MESSAGE);
                 continue;
             }
 
+            // Set the username
             Shared.username = JOptionPane.showInputDialog(null, "Enter username", "Username", JOptionPane.PLAIN_MESSAGE);
             if (Shared.username == null || Shared.username.isEmpty()) {
+                // If canceled
                 helper = null;
             } else {
+                // Add priority to LOGIN
                 helper.addPriority(Command.LOGIN);
                 // Login
                 Request.sendAndWaitForResponse(Request.build(helper)
@@ -74,6 +80,7 @@ public class Discord3 {
                             return false;
                         }));
 
+                // If not logged in; there has been an error
                 if (!loggedIn) {
                     JOptionPane.showMessageDialog(null, error, "Bad username", JOptionPane.ERROR_MESSAGE);
                     helper = null;
@@ -82,6 +89,11 @@ public class Discord3 {
         } while (helper == null);
     }
 
+    /**
+     * When disconnected try to reconnect
+     *
+     * @param error reason
+     */
     private void onDisconnect(String error) {
         if (!Shared.quit) {
             SwingUtilities.invokeLater(() -> {

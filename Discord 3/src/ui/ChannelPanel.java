@@ -2,11 +2,19 @@ package ui;
 
 import model.Channel;
 import model.MainChannel;
-import model.UserChannel;
 import model.RoomChannel;
+import model.UserChannel;
 
 import javax.swing.*;
 
+/**
+ * Channel part of the MainScreen
+ * <p>
+ * Shows a list of channels
+ * - Main
+ * - Rooms
+ * - Users
+ */
 public class ChannelPanel {
     public static final String TITLE_ROOMS = "Rooms";
     public static final String TITLE_USERS = "Users";
@@ -18,10 +26,6 @@ public class ChannelPanel {
     private JList<UserChannel> userList;
 
     private OnChannelSelect onChannelSelect;
-
-    public void setOnChannelSelect(OnChannelSelect onChannelSelect) {
-        this.onChannelSelect = onChannelSelect;
-    }
 
     public ChannelPanel() {
         rooms = new DefaultListModel<>();
@@ -53,7 +57,15 @@ public class ChannelPanel {
         });
     }
 
+    public void setOnChannelSelect(OnChannelSelect onChannelSelect) {
+        this.onChannelSelect = onChannelSelect;
+    }
+
+    /**
+     * Refresh the (n) notification count in the tab label
+     */
     public void refreshTabNotificationCount() {
+        // Set the room notification
         if (tabbedPane.getSelectedIndex() == 1) {
             tabbedPane.setTitleAt(1, TITLE_USERS);
 
@@ -64,6 +76,7 @@ public class ChannelPanel {
                 tabbedPane.setTitleAt(0, TITLE_ROOMS);
             }
         } else {
+            // Set the user notification
             tabbedPane.setTitleAt(0, TITLE_ROOMS);
 
             int notificationCount = getNotificationSum();
@@ -73,9 +86,13 @@ public class ChannelPanel {
                 tabbedPane.setTitleAt(1, TITLE_USERS);
             }
         }
+        // Refresh
         roomList.repaint();
     }
 
+    /**
+     * Sum of notifications in user tab
+     */
     private int getNotificationSum() {
         int sum = 0;
         for (int i = 0; i < users.size(); i++) {
@@ -84,6 +101,12 @@ public class ChannelPanel {
         return sum;
     }
 
+    /**
+     * Get a user channel from their username
+     *
+     * @param username username
+     * @return UserChannel
+     */
     public UserChannel getChannelFromUsername(String username) {
         for (int i = 0; i < users.getSize(); i++) {
             UserChannel channel = users.get(i);

@@ -2,7 +2,7 @@ package helper.model;
 
 /**
  * Enumeration of commands
- *
+ * <p>
  * These are the same as the ones on the server
  */
 public enum Command {

@@ -11,6 +11,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
 
+/**
+ * KickPanel is basically a dialog for an emergency meeting
+ */
 public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnReceivedListener {
     private final DefaultListModel<String> votes;
     private final HashMap<String, Integer> users;
@@ -23,9 +26,9 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
 
     public KickPanel(SocketHelper helper) {
         setContentPane(contentPane);
+        setTitle("Emergency Meeting");
         this.helper = helper;
         helper.addOnReceivedListener(this);
-        setTitle("Emergency Meeting");
         votes = new DefaultListModel<>();
         voteList.setModel(votes);
         users = new HashMap<>();
@@ -33,8 +36,8 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
         buttonCancel.addActionListener(e -> skip());
         buttonVote.addActionListener(e -> vote());
 
-        // call skip() and exit() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        // Skip and exit on close
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 skip();
@@ -58,6 +61,9 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
                 .send();
     }
 
+    /**
+     * If not already voted, vote skip
+     */
     private void skip() {
         if (!voted) {
             voted = true;
@@ -69,11 +75,17 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
         }
     }
 
+    /**
+     * Dispose of this dialog
+     */
     private void exit() {
         helper.removeOnReceivedListener(this);
         dispose();
     }
 
+    /**
+     * If not already voted, vote [username]
+     */
     private void vote() {
         if (!voted) {
             voted = true;
@@ -91,12 +103,20 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
         }
     }
 
+    /**
+     * Get users from USERS response
+     *
+     * @param payload 200 name;name;name
+     */
     private void getUsers(String payload) {
         for (String s : payload.split(";")) {
             users.putIfAbsent(s, 0);
         }
     }
 
+    /**
+     * Update the dialog with new votes and such
+     */
     private void updateList() {
         SwingUtilities.invokeLater(() -> {
             votes.clear();
@@ -112,15 +132,21 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
         this.helper = helper;
     }
 
+    /**
+     * Handle messages when they come in
+     *
+     * @param message Message
+     */
     @Override
     public void onReceive(Message message) {
-        System.out.println(message);
         switch (message.getCommand()) {
             case JOINED_ROOM:
+                // If someone joined the room, add them to the dialog options
                 String username = message.getPayload().split(" ", 2)[0];
                 users.putIfAbsent(username, 0);
                 break;
             case VOTES:
+                // If someone voted, we will receive a VOTED message containing the new data
                 String[] names = message.getPayload().split(";");
                 for (String name : names) {
                     String[] data = name.split(" ", 2);
@@ -130,10 +156,12 @@ public class KickPanel extends JDialog implements SocketHelper.Interfaces.OnRece
                 }
                 break;
             case KICK_RESULT:
+                // If there has been a kick result, the meeting has ended
                 exit();
                 break;
         }
 
+        // Update the dialog if it's visible
         if (isVisible()) {
             updateList();
         }

@@ -11,7 +11,7 @@ public class Checksum {
     private static byte[] createChecksum(File file) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md);
-        while (dis.read() != -1);
+        while (dis.read() != -1) ;
         dis.close();
         return md.digest();
     }
@@ -37,6 +37,4 @@ public class Checksum {
         }
         return result.toString();
     }
-
-
 }
