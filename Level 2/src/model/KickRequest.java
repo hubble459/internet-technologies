@@ -7,11 +7,19 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * The wrapper for an emergency meeting
+ */
 public class KickRequest {
+    // Meeting room
     private final Room room;
+    // Users and amount of votes they have
     private final HashMap<SocketProcess, Integer> votes;
+    // List of users who already voted
     private final ArrayList<SocketProcess> voted;
+    // Timer, because the request times out after 30000 ms
     private final Timer timer;
+    // Amount of skip votes
     private int skips;
 
     public KickRequest(Room room) {
@@ -31,6 +39,12 @@ public class KickRequest {
         }, 30000);
     }
 
+    /**
+     * Increment the votes of a user
+     *
+     * @param voter user who voted
+     * @param user  user who was voted for
+     */
     public void increment(SocketProcess voter, SocketProcess user) {
         if (voted.contains(voter)) {
             voter.sendMessage(Command.BAD_RESPONSE, "Already voted");
@@ -47,6 +61,12 @@ public class KickRequest {
         }
     }
 
+    /**
+     * Check if everyone voted and if so kick the user with the highest votes
+     * If there a multiple users with the highest vote no-one is kicked
+     *
+     * @param force do kick and finish meeting, even if someone has not voted yet
+     */
     public void kick(boolean force) {
         int count = votes();
 
@@ -84,6 +104,11 @@ public class KickRequest {
         return user;
     }
 
+    /**
+     * Get the total amount of votes
+     *
+     * @return total amount of votes
+     */
     private int votes() {
         int count = skips;
         for (Integer value : votes.values()) {
@@ -92,6 +117,11 @@ public class KickRequest {
         return count;
     }
 
+    /**
+     * Turn the votes into a String
+     *
+     * @return [username] [votes];[username] [votes];[username] [votes]
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -102,6 +132,11 @@ public class KickRequest {
         return sb.toString();
     }
 
+    /**
+     * Vote skip
+     *
+     * @param voter who voted
+     */
     public void skip(SocketProcess voter) {
         if (voted.contains(voter)) {
             voter.sendMessage(Command.BAD_RESPONSE, "Already voted");

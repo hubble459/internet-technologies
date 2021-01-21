@@ -6,6 +6,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/**
+ * TCP Text Based ServerSocket
+ * <p>
+ * When run from console you could pass the port as an argument
+ */
 public class MyServer {
     public static final int TIMEOUT = 30000; // -1 for no timeout; in ms
     public static final int RESPONSE_TIME = 3000; // in ms
@@ -14,6 +19,7 @@ public class MyServer {
     public static void main(String[] args) {
         int port = DEFAULT_PORT;
         try {
+            // Port from run arguments
             port = Integer.parseInt(args[0]);
         } catch (Exception ignored) {
         }
@@ -28,11 +34,11 @@ public class MyServer {
         this(DEFAULT_PORT);
     }
 
-    @SuppressWarnings("ALL")
     public MyServer(int port) throws IOException {
         ArrayList<SocketProcess> clients = new ArrayList<>();
         ArrayList<Room> rooms = new ArrayList<>();
 
+        // Default rooms
         rooms.add(new Room("Random"));
         rooms.add(new Room("Waifus"));
         rooms.add(new Room("Java"));
@@ -41,9 +47,9 @@ public class MyServer {
         // Create a socket to wait for clients.
         ServerSocket serverSocket = new ServerSocket(port);
 
-        System.out.println("[SERVER] Started on port " + serverSocket.getLocalPort());
+        System.out.printf("[SERVER] Started on port %d%n", serverSocket.getLocalPort());
 
-        while (true) {
+        while (!serverSocket.isClosed()) {
             // Wait for an incoming client-connection request (blocking).
             Socket socket = serverSocket.accept();
 
@@ -51,19 +57,19 @@ public class MyServer {
             SocketProcess process = new SocketProcess(socket, clients, rooms);
             startProcess(process);
 
-            process.setOnLoginListener(new SocketProcess.OnLoginListener() {
-                @Override
-                public void loggedIn(SocketProcess process) {
-                    int size = clients.size();
-                    String plural = size < 0 || size == 1 ? "" : "s";
-                    System.out.println("[SERVER] " + size + " client" + plural + " logged in");
-                    heartbeat(process);
-                }
+            // When client logged in
+            process.setOnLoginListener(client -> {
+                int size = clients.size();
+                // Print the current user count
+                String plural = size == 1 ? "" : "s";
+                System.out.printf("[SERVER] %d client%s logged in%n", size, plural);
+                // Start heartbeat
+                heartbeat(client);
             });
         }
     }
 
-    @SuppressWarnings("ALL")
+    @SuppressWarnings("ConstantConditions")
     private void heartbeat(SocketProcess client) {
         assert TIMEOUT >= -1;
 
@@ -71,17 +77,12 @@ public class MyServer {
             // If timeout isn't -1 start heartbeat thread for client
             new Thread(() -> {
                 do {
-                    // Don't immediately pong after login
-                    // So sleep for TIMEOUT ms
+                    // Sleep for TIMEOUT ms
                     sleep(TIMEOUT);
                     // Ping the client
                     client.ping();
-                    try {
-                        // Give time for response
-                        Thread.sleep(RESPONSE_TIME);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    // Give time for response
+                    sleep(RESPONSE_TIME);
                     // If no pong, loop stops iterating
                 } while (client.hasPonged());
 

@@ -1,5 +1,11 @@
 package model;
 
+/**
+ * Enumeration of all commandos
+ * <p>
+ * See the protocol for more information about what they do,
+ * and when they are used
+ */
 public enum Command {
     // COMMANDS
     USERS("USERS"), // USERS (get the list of users)

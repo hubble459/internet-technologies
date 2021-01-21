@@ -4,6 +4,11 @@ import process.SocketProcess;
 
 import java.util.ArrayList;
 
+/**
+ * Room
+ * <p>
+ * Used to manage a chat room
+ */
 public class Room {
     private final String roomName;
     private final ArrayList<SocketProcess> clients;
@@ -14,23 +19,43 @@ public class Room {
         this.clients = new ArrayList<>();
     }
 
+    /**
+     * Send a message to all the people in the room
+     *
+     * @param message to send
+     */
     public void broadcastInRoom(Message message) {
         for (SocketProcess client : clients) {
             client.sendMessage(message);
         }
     }
 
+    /**
+     * Join room
+     *
+     * @param client user
+     */
     public void join(SocketProcess client) {
         clients.add(client);
         broadcastInRoom(new Message(Command.JOINED_ROOM, client.getUsername() + " joined " + roomName));
         client.sendMessage(Command.GOOD_RESPONSE, client.getUsername() + " joined " + roomName);
     }
 
+    /**
+     * Leave room
+     *
+     * @param client user
+     */
     public void leave(SocketProcess client) {
         broadcastInRoom(new Message(Command.LEFT_ROOM, client.getUsername() + " left " + roomName));
         removeClient(client);
     }
 
+    /**
+     * Kick from room
+     *
+     * @param client kick user
+     */
     public void kick(SocketProcess client) {
         if (clients.contains(client)) {
             broadcastInRoom(new Message(Command.KICK_RESULT, "1 " + client.getUsername() + " was kicked ówò"));
@@ -40,6 +65,11 @@ public class Room {
         }
     }
 
+    /**
+     * Remove client from room
+     *
+     * @param client user
+     */
     private void removeClient(SocketProcess client) {
         clients.remove(client);
         client.clearRoom();
@@ -61,6 +91,11 @@ public class Room {
         return clients;
     }
 
+    /**
+     * Start emergency meeting
+     *
+     * @param starter user
+     */
     public void startKick(SocketProcess starter) {
         if (kickRequest == null) {
             kickRequest = new KickRequest(this);

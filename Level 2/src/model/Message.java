@@ -1,5 +1,11 @@
 package model;
 
+/**
+ * Basic message
+ *
+ * Wraps an incoming line of text into a model
+ * And can be used to send outgoing messages
+ */
 public class Message {
     private final Command command;
     private String payload;
