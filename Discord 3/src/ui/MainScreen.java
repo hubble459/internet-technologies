@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Locale;
@@ -22,7 +23,7 @@ import java.util.Locale;
 /**
  * MainScreen is basically the whole container of our program
  */
-public class MainScreen extends JFrame {
+public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, ChatPanel.CommandListener {
     private static final String DOWNLOAD_FOLDER = "downloads/";
     private final SocketHelper helper;
     private int pingTimeout = 30000; // Default afk timeout in ms
@@ -67,28 +68,10 @@ public class MainScreen extends JFrame {
         });
 
         // Chat can send commands through MainScreen by using the command listener
-        chatPanel.setCommandListener(message ->
-                // Make a request
-                Request.build(helper)
-                        .setMessage(message)
-                        .setOnResponse((success, msg) -> {
-                            // Show response in chat
-                            if (!success) {
-                                msg.setCommand(Command.SERVER);
-                                chatPanel.addMessage(msg);
-                            } else if (message.getCommand() == Command.WHISPER) {
-                                String to = message.getPayload().split(" ", 2)[0];
-                                String payload = Shared.username + message.getPayload().substring(to.length());
-                                message.setPayload(payload);
-                                messageChannel(chatPanel.currentChannel(), message);
-                            } else if (Shared.stupidJSServer && message.getCommand() == Command.BROADCAST) {
-                                message.setPayload(Shared.username + " " + message.getPayload());
-                                messageChannel(chatPanel.currentChannel(), message);
-                            }
-                            return false;
-                        })
-                        .send()
-        );
+        chatPanel.setCommandListener(this);
+
+        // Chat can tell this screen to upload a file
+        chatPanel.setOnUpload(this);
 
         // If SocketHelper receives a message from server
         helper.addOnReceivedListener(message -> {
@@ -100,7 +83,7 @@ public class MainScreen extends JFrame {
                     // If PING; PONG back if you had any activity between now and 30 seconds ago.
                     // 30 seconds being pingTimout
                     long difference = System.currentTimeMillis() - lastActivity;
-                    if (difference <= pingTimeout) {
+                    if (difference <= pingTimeout || pingTimeout == -1) {
                         Request.build(helper)
                                 .setCommand(Command.PONG)
                                 .setOnResponse((success, message1) -> !success)
@@ -196,21 +179,7 @@ public class MainScreen extends JFrame {
                                         "Download file?", from, fileSize), "Download", JOptionPane.YES_NO_OPTION);
                         // If you want the file
                         if (chosen == JOptionPane.YES_OPTION) {
-                            // Tell server to download
-                            Request.build(helper)
-                                    .setCommand(Command.DOWNLOAD)
-                                    .setPayload(filename)
-                                    .setOnResponse((success, message2) -> {
-                                        if (success) {
-                                            // Save the file
-                                            String[] parts2 = message2.getPayload().split(" ", 2);
-                                            String base64 = parts2[0];
-                                            String checksum = parts2[1];
-                                            downloadFile(filename, Base64.getDecoder().decode(base64), checksum);
-                                        }
-                                        return false;
-                                    })
-                                    .send();
+                            downloadConcurrently(filename);
                         }
                     });
             }
@@ -262,6 +231,34 @@ public class MainScreen extends JFrame {
                 lastActivity = System.currentTimeMillis();
             }
         });
+    }
+
+    /**
+     * Download file on another socket, so we can still send and receive messages.
+     */
+    private void downloadConcurrently(String filename) {
+        try {
+            // Create a new socket connection
+            SocketHelper downloadHelper = new SocketHelper(helper.getIp(), helper.getPort());
+            // Tell server to download
+            Request.build(downloadHelper)
+                    .setCommand(Command.DOWNLOAD)
+                    .setPayload(filename)
+                    .setOnResponse((success, message2) -> {
+                        if (success) {
+                            // Save the file
+                            String[] parts2 = message2.getPayload().split(" ", 2);
+                            String base64 = parts2[0];
+                            String checksum = parts2[1];
+                            downloadFile(filename, Base64.getDecoder().decode(base64), checksum);
+                        }
+                        downloadHelper.closeSocket();
+                        return false;
+                    })
+                    .send();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Failed to download file\n" + e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -459,7 +456,73 @@ public class MainScreen extends JFrame {
         }
     }
 
-    public interface CommandListener {
-        void command(Message message);
+    @Override
+    public void command(Message message) {
+        Request.build(helper)
+                .setMessage(message)
+                .setOnResponse((success, msg) -> {
+                    // Show response in chat
+                    if (!success) {
+                        msg.setCommand(Command.SERVER);
+                        chatPanel.addMessage(msg);
+                    } else if (message.getCommand() == Command.WHISPER) {
+                        String to = message.getPayload().split(" ", 2)[0];
+                        String payload = Shared.username + message.getPayload().substring(to.length());
+                        message.setPayload(payload);
+                        MainScreen.this.messageChannel(chatPanel.currentChannel(), message);
+                    } else if (Shared.stupidJSServer && message.getCommand() == Command.BROADCAST) {
+                        message.setPayload(Shared.username + " " + message.getPayload());
+                        MainScreen.this.messageChannel(chatPanel.currentChannel(), message);
+                    }
+                    return false;
+                })
+                .send();
+    }
+
+    @Override
+    public void upload() {
+        new Thread(() -> {
+            // Open file chooser
+            JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
+            fileChooser.setApproveButtonText("Send");
+            int returnValue = fileChooser.showOpenDialog(null);
+
+            messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Sending file..."));
+
+            // When a file is selected
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                // Get file
+                File file = fileChooser.getSelectedFile();
+                // Remove spaces from file
+                String filename = file.getName().replace(" ", "_");
+                try {
+                    // Get bytes
+                    byte[] bytes = Files.readAllBytes(file.toPath());
+                    // Bytes to Base64
+                    String base64 = Base64.getEncoder().encodeToString(bytes);
+                    // Send file
+                    final int lastPingTimeout = pingTimeout;
+                    pingTimeout = -1;
+                    Request.build(helper)
+                            // FILE command
+                            .setCommand(Command.FILE)
+                            // [username] [filename] [base64] [checksum]
+                            .setPayload(String.format("%s %s %s %s", chatPanel.currentChannel().getName(), filename, base64, Checksum.getMD5Checksum(file)))
+                            .setOnResponse((success, message) -> {
+                                pingTimeout = lastPingTimeout;
+                                if (success) {
+                                    JOptionPane.showMessageDialog(null, "File send successfully!", "Send", JOptionPane.PLAIN_MESSAGE);
+                                } else {
+                                    return JOptionPane.showConfirmDialog(null, "File failed to send...\nTry again?", "Failed", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+                                }
+                                return false;
+                            })
+                            .setMaxRetries(3)
+                            .send();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

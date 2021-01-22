@@ -26,7 +26,8 @@ public class ChatPanel {
     private JButton uploadButton;
     private JButton kickButton;
     private Channel channel;
-    private MainScreen.CommandListener commandListener;
+    private CommandListener commandListener;
+    private OnUploadListener uploadListener;
 
     public ChatPanel() {
         messages = new DefaultListModel<>();
@@ -44,24 +45,7 @@ public class ChatPanel {
      * Upload a file
      */
     private void uploadFile() {
-        JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
-        int returnValue = fileChooser.showOpenDialog(null);
-
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            String filename = file.getName().replace(" ", "_");
-            try {
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                String base64 = Base64.getEncoder().encodeToString(bytes);
-                commandListener.command(
-                        new Message(
-                                Command.FILE,
-                                channel.getName() + ' ' + filename + ' ' + base64 + ' ' + Checksum.getMD5Checksum(file)
-                        ));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        uploadListener.upload();
     }
 
     public Channel currentChannel() {
@@ -122,8 +106,12 @@ public class ChatPanel {
         }
     }
 
-    public void setCommandListener(MainScreen.CommandListener commandListener) {
+    public void setCommandListener(CommandListener commandListener) {
         this.commandListener = commandListener;
+    }
+
+    public void setOnUpload(OnUploadListener uploadListener) {
+        this.uploadListener = uploadListener;
     }
 
     public void addMessage(Message message) {
@@ -159,5 +147,13 @@ public class ChatPanel {
             String text = HTML_1 + width + HTML_2 + message.toHTML() + HTML_3;
             return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         }
+    }
+
+    public interface CommandListener {
+        void command(Message message);
+    }
+
+    public interface OnUploadListener {
+        void upload();
     }
 }

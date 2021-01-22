@@ -366,7 +366,7 @@ s: 400 No username/message given
 
 # QUIT
 
-Als je bent ingelogd kun je de server verlaten door een `QUIT` bericht te sturen.
+Je kunt de server verlaten door een `QUIT` bericht te sturen.
 
 ```
 c: QUIT

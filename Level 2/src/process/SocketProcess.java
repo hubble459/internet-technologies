@@ -106,14 +106,25 @@ public class SocketProcess implements Runnable {
         String payload = message.getPayload();
 
         switch (message.getCommand()) {
-            case FILE:
-                receiveFile(message);
+            case LOGIN:
+                login(payload);
                 break;
             case DOWNLOAD:
                 sendFile(message);
                 break;
+            case QUIT:
+                sendMessage(Command.GOOD_RESPONSE, "Quit successfully");
+                connected = false;
+                break;
+            case FILE:
+                if (ensureLoggedIn()) {
+                    receiveFile(message);
+                }
+                break;
             case WHISPER:
-                whisper(message);
+                if (ensureLoggedIn()) {
+                    whisper(message);
+                }
                 break;
             case VOTE_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
@@ -129,9 +140,6 @@ public class SocketProcess implements Runnable {
                 if (ensureLoggedIn() && ensureInRoom()) {
                     room.voteSkip(this);
                 }
-                break;
-            case LOGIN:
-                login(payload);
                 break;
             case USERS:
                 if (ensureLoggedIn()) {
@@ -166,12 +174,6 @@ public class SocketProcess implements Runnable {
             case BROADCAST_IN_ROOM:
                 if (ensureLoggedIn() && ensureMessageGiven(message)) {
                     talkInRoom(message);
-                }
-                break;
-            case QUIT:
-                if (ensureLoggedIn()) {
-                    sendMessage(Command.GOOD_RESPONSE, "Quit successfully");
-                    connected = false;
                 }
                 break;
             case BROADCAST:
@@ -405,16 +407,7 @@ public class SocketProcess implements Runnable {
 
     public void timeout() {
         sendMessage(Command.DISCONNECTED, "Connection timed out");
-        disconnected();
-
         connected = false;
-        if (!socket.isClosed()) {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void ping() {
@@ -427,7 +420,9 @@ public class SocketProcess implements Runnable {
     }
 
     public void disconnected() {
-        broadcast(new Message(Command.LEFT, "left"));
+        if (loggedIn) {
+            broadcast(new Message(Command.LEFT, "left"));
+        }
         if (room != null) {
             room.leave(this);
         }

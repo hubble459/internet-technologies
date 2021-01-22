@@ -264,7 +264,7 @@ public class SocketHelper implements Runnable {
      *
      * @param message reason
      */
-    public void disconnected(String message) {
+    private void disconnected(String message) {
         // Tell the disconnect listener that there's been a disconnection
         if (onDisconnectListener != null) {
             onDisconnectListener.onDisconnect(message);
@@ -291,7 +291,7 @@ public class SocketHelper implements Runnable {
      * Close the socket if it wasn't already closed
      * And stop the running input thread
      */
-    private void closeSocket() {
+    public void closeSocket() {
         if (socket != null) {
             try {
                 socket.close();
@@ -326,6 +326,14 @@ public class SocketHelper implements Runnable {
 
     public void removeOnReceivedListener(Interfaces.OnReceivedListener onReceivedListener) {
         this.onReceivedListeners.remove(onReceivedListener);
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public enum ActionOnDisconnect {
