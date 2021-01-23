@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class MyServer {
     public static final int TIMEOUT = 30000; // -1 for no timeout; in ms
     public static final int RESPONSE_TIME = 3000; // in ms
-    private static final int DEFAULT_PORT = 1337;
+    private static final int DEFAULT_PORT = 80;
 
     public static void main(String[] args) {
         int port = DEFAULT_PORT;

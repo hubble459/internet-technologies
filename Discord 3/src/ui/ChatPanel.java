@@ -4,13 +4,9 @@ import helper.model.Command;
 import helper.model.Message;
 import model.Channel;
 import model.DisabledItemSelectionModel;
-import util.Checksum;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.nio.file.Files;
-import java.util.Base64;
 
 /**
  * Chat part of the MainScreen
@@ -58,26 +54,15 @@ public class ChatPanel {
     public void sendFromTextField() {
         String text = textField.getText();
         if (text != null && !text.isEmpty()) {
-            // If its a command
-            if (commandListener != null && text.startsWith("/")) {
-                Message message = Message.fromLine(text.substring(1).toUpperCase());
-                if (message.getCommand() != null) {
-                    // Send command
-                    commandListener.command(new Message(message.getCommand(), message.getPayload()));
-                } else {
-                    addMessage(new Message(Command.SERVER, "'" + text.substring(1) + "' is not a valid command"));
-                }
+            // Send message
+            if (channel == null) {
+                addMessage(new Message(Command.SERVER, "You are not in a channel"));
             } else {
-                // If its a chat
-                if (channel == null) {
-                    addMessage(new Message(Command.SERVER, "You are not in a channel"));
+                // Send message
+                if (channel.isPM()) {
+                    commandListener.command(new Message(channel.getCommand(), channel.getName() + " " + text));
                 } else {
-                    // Send message
-                    if (channel.isPM()) {
-                        commandListener.command(new Message(channel.getCommand(), channel.getName() + " " + text));
-                    } else {
-                        commandListener.command(new Message(channel.getCommand(), text));
-                    }
+                    commandListener.command(new Message(channel.getCommand(), text));
                 }
             }
         }

@@ -88,6 +88,7 @@ public class ChannelPanel {
         }
         // Refresh
         roomList.repaint();
+        userList.repaint();
     }
 
     /**

@@ -22,10 +22,10 @@ public class AESUtil {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    public static String decrypt(String cipherText, SecretKey key) throws Exception {
+    public static String decrypt(String cipherTextBase64, SecretKey key) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, generateIv());
-        byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
+        byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherTextBase64));
         return new String(plainText);
     }
 

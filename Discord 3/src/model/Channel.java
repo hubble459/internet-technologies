@@ -3,6 +3,7 @@ package model;
 import helper.model.Command;
 import helper.model.Message;
 
+import javax.crypto.SecretKey;
 import java.util.ArrayList;
 
 /**
@@ -14,6 +15,7 @@ public abstract class Channel {
     private final String name;
     private final ArrayList<Message> messages;
     private final Command command;
+    private SecretKey secretKey;
     private int notification;
 
     public Channel(String name, ChannelType type) {
@@ -60,6 +62,14 @@ public abstract class Channel {
 
     public boolean isRoom() {
         return command == Command.BROADCAST_IN_ROOM;
+    }
+
+    public void setSecretKey(SecretKey secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public SecretKey getSecretKey() {
+        return secretKey;
     }
 
     @Override

@@ -6,9 +6,11 @@ import helper.model.Request;
 import ui.MainScreen;
 
 import javax.crypto.Cipher;
+import javax.crypto.SealedObject;
 import javax.crypto.SecretKey;
 import javax.swing.*;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -49,6 +51,7 @@ public class Discord3 {
             String puk = Shared.publicKeyBase64 = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
             System.out.println(puk);
 
+
             byte[] data = sec.getBytes(StandardCharsets.UTF_8);
             // Asynchroon
             Cipher cipher = Cipher.getInstance("RSA");
@@ -66,7 +69,6 @@ public class Discord3 {
             // Joost: PM nsdghwsjhr
             // Quentin: nsfhswkhgfwes -> kutkind
 
-            cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, kp.getPrivate());
             byte[] decrypted = cipher.doFinal(bytesToSend);
             System.out.println(new String(decrypted));

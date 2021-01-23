@@ -14,6 +14,7 @@ import util.Checksum;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -22,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -73,7 +73,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                 }
 
                 // Start HANDSHAKE
-                if (selectedChannel.isPM()) {
+                if (selectedChannel.isPM() && selectedChannel.getSecretKey() == null) {
                     Request.build(helper)
                             .setCommand(Command.HANDSHAKE)
                             .setPayload(selectedChannel.getName())
@@ -125,9 +125,24 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     break;
                 case WHISPER:
                     // Received a PM from someone
-                    from = message.getPayload().split(" ", 2)[0];
+                    String[] parts = message.getPayload().split(" ", 2);
+                    from = parts[0];
+
                     UserChannel userChannel = channelPanel.getChannelFromUsername(from);
-                    messageChannel(userChannel, message);
+                    if (userChannel != null) {
+                        System.out.println(userChannel.getSecretKey());
+
+                        try {
+//                            String encrypted = new String(Base64.getDecoder().decode(parts[1].getBytes()));
+                            String decrypted = AESUtil.decrypt(parts[1], userChannel.getSecretKey());
+                            System.out.println("decrypted = " + decrypted);
+                            message.setPayload(from + ' ' + decrypted);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        messageChannel(userChannel, message);
+                    }
                     break;
                 case SESSION_TOKEN:
                     // Received a session token from someone who want to PM
@@ -135,8 +150,15 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     String[] split = message.getPayload().split(" ", 2);
                     from = split[0];
                     String encryptedToken = split[1];
-                    encryptedToken = new String(Base64.getDecoder().decode(encryptedToken));
-                    String token = decryptWithPrivateKey(encryptedToken);
+                    byte[] encryptedTokenBytes = Base64.getDecoder().decode(encryptedToken);
+                    byte[] decryptedToken = decryptWithPrivateKey(encryptedTokenBytes);
+                    // rebuild key using SecretKeySpec
+                    SecretKey originalKey = new SecretKeySpec(decryptedToken, 0, decryptedToken.length, "AES");
+
+                    UserChannel userChannel2 = channelPanel.getChannelFromUsername(from);
+                    if (userChannel2 != null) {
+                        userChannel2.setSecretKey(originalKey);
+                    }
                     break;
                 case JOINED_ROOM:
                     // Someone joined the room I'm in
@@ -193,10 +215,10 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     break;
                 case FILE:
                     // Received a file
-                    String[] parts = message.getPayload().split(" ", 4);
-                    from = parts[0];
-                    String filename = parts[1];
-                    double fileSize = Double.parseDouble(parts[2]);
+                    String[] parts2 = message.getPayload().split(" ", 4);
+                    from = parts2[0];
+                    String filename = parts2[1];
+                    double fileSize = Double.parseDouble(parts2[2]);
 
                     // Show a popup that you received a file
                     SwingUtilities.invokeLater(() -> {
@@ -265,41 +287,64 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
         });
     }
 
-    private String decryptWithPrivateKey(String token) {
+    private byte[] decryptWithPrivateKey(byte[] encryptedToken) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, Shared.keyPair.getPrivate());
-            byte[] decrypted = cipher.doFinal(token.getBytes());
-            return new String(decrypted);
+            return cipher.doFinal(encryptedToken);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return new byte[16];
     }
 
+    /**
+     * Get the public key of user I wanted to PM with
+     *
+     * @param success successful request
+     * @param message [public key]
+     * @return true if retry request
+     */
     private boolean handshake(boolean success, Message message) {
         if (success) {
+            // Public Key
             String publicKey = message.getPayload();
 
             try {
+                // Create a Cipher instance
                 Cipher cipher = Cipher.getInstance("RSA");
 
-                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey.getBytes(StandardCharsets.UTF_8)));
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                // Get bytes of public key
+                byte[] pukBytes = Base64.getDecoder().decode(publicKey.getBytes(StandardCharsets.UTF_8));
+                // Turn bytes into KeySpec
+                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(pukBytes);
+                // Turn KeySpec into Public Key
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA"); // RSA Encryption
                 PublicKey pubKey = keyFactory.generatePublic(keySpec);
+                // Set ENCRYPT mode with Public key
                 cipher.init(Cipher.ENCRYPT_MODE, pubKey);
 
+                // Create session token
                 SecretKey secret = AESUtil.generateKey();
-                String secretToken = Base64.getEncoder().encodeToString(secret.getEncoded());
-                byte[] data = secretToken.getBytes();
+                // Get bytes
+                byte[] data = secret.getEncoded();
+                // Encrypt bytes with public key
                 byte[] bytesToSend = cipher.doFinal(data);
-                String base64ToSend = Base64.getEncoder().encodeToString(bytesToSend);
-                String username = chatPanel.currentChannel().getName();
+                // Encode bytes into Base64
+                String base64ToSend = Base64.getEncoder().encodeToString(bytesToSend); // -> [Base64[RSA[token]]]
+                // Get the user chat panel
+                Channel userChannel = chatPanel.currentChannel();
+                // Set the chat session key
+                userChannel.setSecretKey(secret);
+                // Get the username
+                String username = userChannel.getName();
+
+                // Send Session key to recipient in base64 [Base64[RSA[token]]]
                 Request.build(helper)
                         .setMessage(Command.SESSION_TOKEN, username + " " + base64ToSend)
                         .send();
-
             } catch (Exception e) {
+                // Error
                 e.printStackTrace();
             }
         }
@@ -346,11 +391,11 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
         if (channel != null) {
             if (save && chatPanel.currentChannel() != channel) {
                 channel.addMessage(message);
-                channel.addNotification();
-                channelPanel.refreshTabNotificationCount();
             } else {
                 chatPanel.addMessage(message, save);
             }
+            channel.addNotification();
+            channelPanel.refreshTabNotificationCount();
         }
     }
 
@@ -419,9 +464,24 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                 });
 
         // Add a help button
-        options.add("Help");
+        JMenuItem help = options.add("Help");
+        help.setMnemonic(KeyEvent.VK_H);
+        help.addActionListener(e -> JOptionPane.showMessageDialog(null,
+                "- Options\n" +
+                        "   - Quit -> close discord3\n" +
+                        "   - Timeout -> change the length of the timeout\n" +
+                        "   - Add Room -> Create a room\n" +
+                        "- Kick (in a room)\n" +
+                        "   - Vote -> The selected member gets a vote\n" +
+                        "   - Skip -> Skip voting\n" +
+                        "- Upload (in private message)\n" +
+                        "   - Select a file to upload and send\n" +
+                        "For more information consult the documentation in the git-repo",
+                "Help", JOptionPane.INFORMATION_MESSAGE));
 
-        // Add a help button
+
+
+        // Add a timeout button
         Integer[] milliOptions = new Integer[]{
                 500,
                 1000,
@@ -469,7 +529,14 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     }
                 });
 
-
+        JMenuItem about = options.add("About");
+        about.setMnemonic(KeyEvent.VK_A);
+        about.addActionListener(e -> JOptionPane.showMessageDialog(null,
+                "<html><h1>Discord3 v1.3</h1></html>\n" +
+                        "Created by\n" +
+                        "<html><em>Quentin Correia & Joost Winkelman</em></html>\n" +
+                        "We hope you enjoy Discord3 :)",
+                "About", JOptionPane.INFORMATION_MESSAGE));
         // Add options to the menu bar
         menuBar.add(options);
 
@@ -530,23 +597,57 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
         }
     }
 
+    /**
+     * ChatPanel wants to send a message
+     *
+     * @param message to send
+     */
     @Override
     public void command(Message message) {
+        // Original payload
+        String orgPayload = message.getPayload();
+        // If it's a Private Message, the payload should be encrypted
+        if (message.getCommand() == Command.WHISPER) {
+            // Current channel will always be the PM channel
+            Channel current = chatPanel.currentChannel();
+
+            // Cut payload into parts
+            String[] parts = orgPayload.split(" ", 2);
+            String to = parts[0]; // Send to
+            String payload = parts[1]; // Send what (payload)
+            try {
+                // Encrypt payload with session key
+                String encrypted = AESUtil.encrypt(payload, current.getSecretKey());
+                // Change the message
+                message.setPayload(to + ' ' + encrypted);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Send message
         Request.build(helper)
                 .setMessage(message)
                 .setOnResponse((success, msg) -> {
                     // Show response in chat
                     if (!success) {
+                        // Show error
                         msg.setCommand(Command.SERVER);
-                        chatPanel.addMessage(msg);
+                        messageChannel(chatPanel.currentChannel(), msg);
                     } else if (message.getCommand() == Command.WHISPER) {
-                        String to = message.getPayload().split(" ", 2)[0];
-                        String payload = Shared.username + message.getPayload().substring(to.length());
-                        message.setPayload(payload);
-                        MainScreen.this.messageChannel(chatPanel.currentChannel(), message);
+                        // If PM add the message you send to your own chat
+                        // [username] [unencrypted payload]
+                        String pay = Shared.username + orgPayload.substring(orgPayload.split(" ", 2)[0].length());
+
+                        // Set payload
+                        message.setPayload(pay);
+
+                        // Add message
+                        messageChannel(chatPanel.currentChannel(), message);
                     } else if (Shared.stupidJSServer && message.getCommand() == Command.BROADCAST) {
+                        // If Broadcast and it's the old JS Server, add the message to the chat yourself
                         message.setPayload(Shared.username + " " + message.getPayload());
-                        MainScreen.this.messageChannel(chatPanel.currentChannel(), message);
+                        messageChannel(chatPanel.currentChannel(), message);
                     }
                     return false;
                 })
@@ -555,6 +656,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
 
     @Override
     public void upload() {
+        // Do this on another thread so you can still send and receive messages
         new Thread(() -> {
             // Open file chooser
             JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
@@ -573,9 +675,11 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     byte[] bytes = Files.readAllBytes(file.toPath());
                     // Bytes to Base64
                     String base64 = Base64.getEncoder().encodeToString(bytes);
-                    // Send file
+                    // Save currentTimeout
                     final int lastPingTimeout = pingTimeout; // 360000
+                    // Set timout to infinite while uploading
                     pingTimeout = -1;
+                    // Send file
                     Request.build(helper)
                             // FILE command
                             .setCommand(Command.FILE)
@@ -584,10 +688,13 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                             .setOnResponse((success, message) -> {
                                 boolean result = false;
                                 if (success) {
+                                    // Send feedback that file was send successfully
                                     JOptionPane.showMessageDialog(null, "File send successfully!", "Send", JOptionPane.PLAIN_MESSAGE);
                                 } else {
+                                    // Ask if user wants to retry
                                     result = JOptionPane.showConfirmDialog(null, "File failed to send...\nTry again?", "Failed", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
                                 }
+                                // Reset timeout timer
                                 lastActivity = System.currentTimeMillis();
                                 pingTimeout = lastPingTimeout;
 
