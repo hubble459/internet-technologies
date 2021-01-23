@@ -29,14 +29,14 @@ Alle mededelingen zijn woorden
 
 # Login
 
-Om in te loggen moet je een `CONN [username]` bericht sturen.
+Om in te loggen moet je een `CONN [username] [public key]` bericht sturen.
 
 ### Happy Flow
 
 Ingelogd als Quentin; wordt in de andere flows gebruikt als de ingelogde user.
 
 ```
-c: CONN Quentin
+c: CONN Quentin abcd==
 s: 200 Logged in as Quentin
 o: JSERVER Quentin joined the server
 ```
@@ -327,7 +327,7 @@ c: VOTE unknown_user
 s: 400 No user with this username found
 ```
 
-# WHISPER
+# WHISPER (Private Message / Direct Message)
 
 *Een privé bericht (direct message) sturen naar een andere gebruiker.*
 
@@ -423,6 +423,8 @@ s: 400 Failed to write file on server
 ```
 
 ## <NOTIFICATION> FILE [from_username] [filename] [size_in_mb]
+Als je een FILE command van server ontvangt dan krijg je een bestand aangeboden.
+Om deze te downloaden gebruik je het commando wat hieronder staat.
 
 ## DOWN [filename]
 
@@ -434,7 +436,7 @@ Bestand ontvangen van een gebruiker.
 s: FILE Quentin itech.zip 1.2
 c: DOWN itech.zip
 s: 200 [base64] [checksum]
-c: client compares checksums
+c: compares checksums
 ```
 
 ### Sad Flow

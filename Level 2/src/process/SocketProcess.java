@@ -7,7 +7,11 @@ import util.Checksum;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Locale;
@@ -25,6 +29,7 @@ public class SocketProcess implements Runnable {
     private Room room;
     private OnLoginListener onLoginListener;
     private String username;
+    private PublicKey publicKey;
 
     public SocketProcess(Socket socket, ArrayList<SocketProcess> clients, ArrayList<Room> rooms) throws IOException {
         this.socket = socket;
@@ -126,6 +131,16 @@ public class SocketProcess implements Runnable {
                     whisper(message);
                 }
                 break;
+            case HANDSHAKE:
+                if (ensureLoggedIn()) {
+                    handshake(payload);
+                }
+                break;
+            case SESSION_TOKEN:
+                if (ensureLoggedIn()) {
+                    createSession(payload);
+                }
+                break;
             case VOTE_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
                     room.startKick(this);
@@ -186,6 +201,34 @@ public class SocketProcess implements Runnable {
                 ponged = true;
                 sendMessage(Command.GOOD_RESPONSE, "Pong received");
                 break;
+        }
+    }
+
+    private void createSession(String payload) {
+        String[] parts = payload.split(" ", 2);
+        String username = parts[0];
+        SocketProcess user = getUserFromUsername(username);
+        if (user != null) {
+            String token = parts[1];
+            sendMessage(Command.GOOD_RESPONSE, "Token send successfully");
+            user.sendMessage(Command.SESSION_TOKEN, this.username + ' ' + token);
+        } else {
+            sendMessage(Command.BAD_RESPONSE, "User with username '" + username + "' does not exist");
+        }
+    }
+
+    /**
+     * Request the public key of the user with the given username
+     *
+     * @param username user username
+     */
+    private void handshake(String username) {
+        SocketProcess user = getUserFromUsername(username);
+        if (user != null) {
+            PublicKey publicKey = user.getPublicKey();
+            sendMessage(Command.GOOD_RESPONSE, Base64.getEncoder().encodeToString(publicKey.getEncoded()));
+        } else {
+            sendMessage(Command.BAD_RESPONSE, "User with username '" + username + "' does not exist");
         }
     }
 
@@ -357,24 +400,39 @@ public class SocketProcess implements Runnable {
 
     private void login(String payload) {
         if (!loggedIn) {
-            if (payload.matches("\\w{3,14}")) {
-                if (!usernameExists(payload)) {
-                    username = payload;
-                    loggedIn = true;
+            String[] parts = payload.split(" ", 2);
+            String username = parts[0];
+            if (username.matches("\\w{3,14}")) {
+                if (parts.length > 1) {
+                    if (!usernameExists(username)) {
+                        try {
+                            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(parts[1].getBytes(StandardCharsets.UTF_8)));
+                            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                            publicKey = keyFactory.generatePublic(keySpec);
+                        } catch (Exception e) {
+                            System.err.println("ówò");
+                        }
 
-                    sendMessage(Command.GOOD_RESPONSE, "Logged in as " + username);
+                        this.username = username;
 
-                    Message message = new Message(Command.JOINED_SERVER, username + " joined the server");
-                    for (SocketProcess client : clients) {
-                        client.sendMessage(message);
+                        loggedIn = true;
+
+                        sendMessage(Command.GOOD_RESPONSE, "Logged in as " + username);
+
+                        Message message = new Message(Command.JOINED_SERVER, username + " joined the server");
+                        for (SocketProcess client : clients) {
+                            client.sendMessage(message);
+                        }
+
+                        clients.add(this);
+
+                        // Tell listener that we logged in
+                        if (onLoginListener != null) onLoginListener.loggedIn(this);
+                    } else {
+                        sendMessage(Command.BAD_RESPONSE, "User with username '" + payload + "' is already logged in");
                     }
-
-                    clients.add(this);
-
-                    // Tell listener that we logged in
-                    if (onLoginListener != null) onLoginListener.loggedIn(this);
                 } else {
-                    sendMessage(Command.BAD_RESPONSE, "User with username '" + payload + "' is already logged in");
+                    sendMessage(Command.BAD_RESPONSE, "Please append a key after the username");
                 }
             } else {
                 sendMessage(Command.BAD_RESPONSE, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
@@ -562,6 +620,10 @@ public class SocketProcess implements Runnable {
 
     public void clearRoom() {
         this.room = null;
+    }
+
+    public PublicKey getPublicKey() {
+        return this.publicKey;
     }
 
     public void broadcast(Message message) {

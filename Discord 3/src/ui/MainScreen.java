@@ -1,5 +1,6 @@
 package ui;
 
+import helper.AESUtil;
 import helper.Shared;
 import helper.SocketHelper;
 import helper.model.Command;
@@ -11,12 +12,19 @@ import model.RoomChannel;
 import model.UserChannel;
 import util.Checksum;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Locale;
 
@@ -63,6 +71,16 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                             })
                             .send();
                 }
+
+                // Start HANDSHAKE
+                if (selectedChannel.isPM()) {
+                    Request.build(helper)
+                            .setCommand(Command.HANDSHAKE)
+                            .setPayload(selectedChannel.getName())
+                            .setOnResponse(this::handshake)
+                            .setMaxRetries(5)
+                            .send();
+                }
             }
             chatPanel.setChannel(selectedChannel);
         });
@@ -87,7 +105,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                         Request.build(helper)
                                 .setCommand(Command.PONG)
                                 .setOnResponse((success, message1) -> !success)
-                                .setMaxRetries(2)
+                                .setMaxRetries(5)
                                 .send();
                     }
                     break;
@@ -226,11 +244,46 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
 
         // When a message is send through the helper
         helper.setOnSendListener(message -> {
+            if (message.getCommand() == Command.FILE) {
+                // Print this instead of all the Base64 stuff,
+                // cus that do be lagging the console tho
+                System.out.println("File SEND!");
+            }
             // If its anything but PONG, update last activity
             if (message.getCommand() != Command.PONG) {
                 lastActivity = System.currentTimeMillis();
             }
         });
+    }
+
+    private boolean handshake(boolean success, Message message) {
+        if (success) {
+            String publicKey = message.getPayload();
+
+            try {
+                Cipher cipher = Cipher.getInstance("RSA");
+
+                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey.getBytes(StandardCharsets.UTF_8)));
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PublicKey pubKey = keyFactory.generatePublic(keySpec);
+                cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+
+                SecretKey secret = AESUtil.generateKey();
+                String secretToken = Base64.getEncoder().encodeToString(secret.getEncoded());
+                byte[] data = secretToken.getBytes();
+                byte[] bytesToSend = cipher.doFinal(data);
+                String base64ToSend = Base64.getEncoder().encodeToString(bytesToSend);
+                String username = chatPanel.currentChannel().getName();
+                Request.build(helper)
+                        .setMessage(Command.SESSION_TOKEN, username + " " + base64ToSend)
+                        .send();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return !success;
     }
 
     /**
@@ -487,10 +540,9 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
             fileChooser.setApproveButtonText("Send");
             int returnValue = fileChooser.showOpenDialog(null);
 
-            messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Sending file..."));
-
             // When a file is selected
             if (returnValue == JFileChooser.APPROVE_OPTION) {
+                messageChannel(chatPanel.currentChannel(), new Message(Command.SERVER, "Sending file..."));
                 // Get file
                 File file = fileChooser.getSelectedFile();
                 // Remove spaces from file
@@ -501,7 +553,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     // Bytes to Base64
                     String base64 = Base64.getEncoder().encodeToString(bytes);
                     // Send file
-                    final int lastPingTimeout = pingTimeout;
+                    final int lastPingTimeout = pingTimeout; // 360000
                     pingTimeout = -1;
                     Request.build(helper)
                             // FILE command
@@ -509,13 +561,16 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                             // [username] [filename] [base64] [checksum]
                             .setPayload(String.format("%s %s %s %s", chatPanel.currentChannel().getName(), filename, base64, Checksum.getMD5Checksum(file)))
                             .setOnResponse((success, message) -> {
-                                pingTimeout = lastPingTimeout;
+                                boolean result = false;
                                 if (success) {
                                     JOptionPane.showMessageDialog(null, "File send successfully!", "Send", JOptionPane.PLAIN_MESSAGE);
                                 } else {
-                                    return JOptionPane.showConfirmDialog(null, "File failed to send...\nTry again?", "Failed", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+                                    result = JOptionPane.showConfirmDialog(null, "File failed to send...\nTry again?", "Failed", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
                                 }
-                                return false;
+                                lastActivity = System.currentTimeMillis();
+                                pingTimeout = lastPingTimeout;
+
+                                return result;
                             })
                             .setMaxRetries(3)
                             .send();

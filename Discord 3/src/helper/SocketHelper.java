@@ -20,7 +20,7 @@ import java.util.*;
 public class SocketHelper implements Runnable {
     private static final boolean ENABLE_LOGGING = true; // false if logging should be disabled
     // If logging is enabled you can skip logging commands by adding them to the list below
-    private static final List<Command> DONT_LOG = Arrays.asList(Command.PONG, Command.PING);
+    private static final List<Command> DONT_LOG = Arrays.asList(Command.PONG, Command.PING, Command.FILE);
 
     private final ArrayDeque<Command> required;
     private final ArrayList<Interfaces.OnReceivedListener> onReceivedListeners;

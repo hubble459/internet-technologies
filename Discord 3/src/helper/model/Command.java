@@ -24,6 +24,8 @@ public enum Command {
     PONG("PONG"), // PONG (send pong to notify server)
     FILE("FILE"), // FILE <recipient> <filename> <base64> (to send a file)
     DOWNLOAD("DOWN"), // DOWN <filename> (To download a file)
+    HANDSHAKE("SHAKE"), // SHAKE <username> (To start a private conversation)
+    SESSION_TOKEN("SESSION"), // SESSION <username> <encrypted session key> (create a session with <username> with session key)
 
     // NOTIFICATIONS
     INFO("INFO"), // (info message)
@@ -36,8 +38,10 @@ public enum Command {
     JOINED_ROOM("JROOM"), // JROOM <username> <message> (joined the room)
     LEFT_ROOM("RLEFT"), // RLEFT <username> <message> (left the room)
     LEFT("LEFT"), // LEFT <username> <message> (left the server)
+    PUBLIC_KEY("PUK"), // PUK <username> <public key> (received a public key)
     //STARTED_KICK("KICK"), // (vote kick started)
     //FILE("FILE"), // FILE <from> <filename> (when you received a file)
+    //SESSION_TOKEN("SESSION"), // SESSION <username> <encrypted session key> (received a session key decrypt-able with own private key)
 
     // RESPONSES
     GOOD_RESPONSE("200"), // Good response
