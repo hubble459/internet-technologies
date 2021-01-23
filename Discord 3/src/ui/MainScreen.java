@@ -129,6 +129,15 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     UserChannel userChannel = channelPanel.getChannelFromUsername(from);
                     messageChannel(userChannel, message);
                     break;
+                case SESSION_TOKEN:
+                    // Received a session token from someone who want to PM
+                    // [username] [token encrypted with my pubKey]
+                    String[] split = message.getPayload().split(" ", 2);
+                    from = split[0];
+                    String encryptedToken = split[1];
+                    encryptedToken = new String(Base64.getDecoder().decode(encryptedToken));
+                    String token = decryptWithPrivateKey(encryptedToken);
+                    break;
                 case JOINED_ROOM:
                     // Someone joined the room I'm in
                     message.setCommand(Command.SERVER);
@@ -254,6 +263,18 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                 lastActivity = System.currentTimeMillis();
             }
         });
+    }
+
+    private String decryptWithPrivateKey(String token) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, Shared.keyPair.getPrivate());
+            byte[] decrypted = cipher.doFinal(token.getBytes());
+            return new String(decrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private boolean handshake(boolean success, Message message) {
