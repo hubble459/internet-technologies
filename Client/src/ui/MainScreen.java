@@ -133,7 +133,6 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                         System.out.println(userChannel.getSecretKey());
 
                         try {
-//                            String encrypted = new String(Base64.getDecoder().decode(parts[1].getBytes()));
                             String decrypted = AESUtil.decrypt(parts[1], userChannel.getSecretKey());
                             System.out.println("decrypted = " + decrypted);
                             message.setPayload(from + ' ' + decrypted);
@@ -329,10 +328,8 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
 
                 // Create session token
                 SecretKey secret = AESUtil.generateKey();
-                // Get bytes
-                byte[] data = secret.getEncoded();
                 // Encrypt bytes with public key
-                byte[] bytesToSend = cipher.doFinal(data);
+                byte[] bytesToSend = cipher.doFinal(secret.getEncoded());
                 // Encode bytes into Base64
                 String base64ToSend = Base64.getEncoder().encodeToString(bytesToSend); // -> [Base64[RSA[token]]]
                 // Get the user chat panel

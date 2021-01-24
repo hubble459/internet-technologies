@@ -1,9 +1,12 @@
+import helper.AESUtil;
 import helper.SocketHelper;
 import helper.model.Command;
 import helper.model.Message;
 import helper.model.Request;
 import org.junit.jupiter.api.*;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -136,15 +139,95 @@ public class ServerTest {
 
     @Test
     void testEmergencyMeeting() {
-        // Command.START_KICK
-        // Command.VOTE_KICK_USER
-        // Command.VOTE_SKIP
+        login();
+        // Not in a room
+        send(Command.START_KICK, test(false));
+        // Join room
+        send(quentinHelper, Command.JOIN_ROOM, "Room", test(true));
+        send(joostHelper, Command.JOIN_ROOM, "Room", test(true));
+        // Start meeting
+        send(Command.START_KICK, test(true));
+        // Already started
+        send(Command.START_KICK, test(false));
+
+        // Quentin votes but does not give a name
+        send(Command.VOTE_KICK_USER, test(false));
+        // Quentin votes for Joost
+        send(Command.VOTE_KICK_USER, "Joost", test(true));
+        // Quentin votes a second time
+        send(Command.VOTE_KICK_USER, "Joost", test(false));
+        send(Command.VOTE_SKIP, test(false));
+
+        // Joost skips
+        send(joostHelper, Command.VOTE_SKIP, "", test(true));
+        // Votes should now be Joost 1;Quentin 0
+        // So Joost should het kicked
+
+        // Wait for server to kick Joost
+        sleep();
+
+        // Now Joost got kicked, we check this by trying to get all users in the Room
+        // This should say that Joost is not in a room
+        send(joostHelper, Command.ROOM, null, test(false, "Join a room first"));
     }
 
     @Test
-    void testEncryption() {
-        // Command.HANDSHAKE
-        // Command.SESSION
+    void testEncryption() throws Exception {
+        login();
+
+        // In this scenario Joost want to start an encrypted conversation
+        // with Quentin so he needs his Public Key to send the session key
+
+        // User with username not found
+        send(Command.HANDSHAKE, "Quenny", test(false));
+        // Get public key
+        send(Command.HANDSHAKE, "Quentin", test(true)); // returns 200 abc==
+        // Because it's really annoying to turn the base64 public key into an actual PublicKey
+        // We will just use quentinKeyPair.getPublic() instead of converting it
+        // If you want to see how we convert it, check MainScreen.java line 323
+
+        // Now Joost had to encrypt a session key with Quentins PublicKey
+        SecretKey sessionKey = AESUtil.generateKey();
+
+        // Create a Cipher instance
+        Cipher cipher = Cipher.getInstance("RSA");
+        // Set ENCRYPT_MODE with Quentin's Public Key
+        cipher.init(Cipher.ENCRYPT_MODE, quentinKeyPair.getPublic());
+        // Encrypt sessionKey bytes with Quentin's  Public Key
+        byte[] bytesToSend = cipher.doFinal(sessionKey.getEncoded());
+        // Encode bytes into Base64
+        String stringToSend = Base64.getEncoder().encodeToString(bytesToSend);
+
+        // Send without username or bad username
+        send(joostHelper, Command.SESSION_TOKEN, stringToSend, test(false));
+        send(joostHelper, Command.SESSION_TOKEN, "bad " + stringToSend, test(false));
+        // Server can't check if key is valid because server is unable to decrypt it
+
+        // Quentin waits for session token
+        received(quentinHelper, Command.SESSION_TOKEN, "Joost " + stringToSend, () -> {
+            // Joost sends Quentin a session token
+            send(joostHelper, Command.SESSION_TOKEN, "Quentin " + stringToSend, test(true));
+        });
+
+        // Now Quentin has the session key which is encrypted with his PublicKey and encoded in Base64
+        // It's basically like this: [Base64[RSA_PublicKey[SessionToken]]]
+        // Only Quentin can decrypt de session token because the private key is needed for that
+        // And again, its a whole process to decrypt the key and turn the bytes into an actual SecretKey object
+        // For this check line 155 in MainScreen.java, for this example we will use the sessionKey joost has generated
+
+        String plainText = "owo";
+        String message = AESUtil.encrypt(plainText, sessionKey);
+
+        // Quentin waits for WHISPER
+        received(quentinHelper, Command.WHISPER, "Joost " + message, () -> {
+            // Joost sends Quentin an encrypted message
+            send(joostHelper, Command.WHISPER, "Quentin " + message, test(true));
+        });
+
+        // Quentin can then decrypt the message with the sessionKey
+        String received = AESUtil.decrypt(message, sessionKey);
+        // The send and received message should be the same
+        assertEquals(plainText, received);
     }
 
     /*                                                          *
@@ -180,7 +263,9 @@ public class ServerTest {
             try {
                 lock.wait(1000);
                 assertEquals(command, message[0].getCommand());
-                testPayload(message[0], payload);
+                if (payload != null) {
+                    testPayload(message[0], payload);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -245,5 +330,16 @@ public class ServerTest {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         return kpg.generateKeyPair();
+    }
+
+    /**
+     * Sleep for one second
+     */
+    void sleep() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
