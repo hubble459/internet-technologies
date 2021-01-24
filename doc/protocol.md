@@ -67,7 +67,7 @@ s: 400 Please append a key after the username
 
 Als je een bericht naar iedereen op de server wilt versturen dan gebruik je `BCST`.
 
-### Happy Flow TODO
+### Happy Flow
 
 ```
 c: BCST Hello World
