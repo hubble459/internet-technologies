@@ -145,6 +145,13 @@ public class ChannelPanel {
         userList.repaint();
     }
 
+    public void removeUser(String username) {
+        UserChannel channel = getChannelFromUsername(username);
+        if (channel != null) {
+            users.removeElement(channel);
+        }
+    }
+
     public interface OnChannelSelect {
         void channel(Channel channel);
     }

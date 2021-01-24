@@ -177,6 +177,8 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                     // Someone left the server
                     message.setCommand(Command.SERVER);
                     messageChannel(channelPanel.getMain(), message);
+                    username = message.getPayload().split(" ", 2)[0];
+                    channelPanel.removeUser(username);
                     break;
                 case JOINED_SERVER:
                     // Someone joined the server
