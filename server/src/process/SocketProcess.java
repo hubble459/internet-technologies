@@ -247,9 +247,13 @@ public class SocketProcess implements Runnable {
         String username = parts[0];
         SocketProcess user = getUserFromUsername(username);
         if (user != null) {
-            String token = parts[1];
-            sendMessage(Command.GOOD_RESPONSE, "Token send successfully");
-            user.sendMessage(Command.SESSION_TOKEN, this.username + ' ' + token);
+            if (parts.length == 2) {
+                String token = parts[1];
+                sendMessage(Command.GOOD_RESPONSE, "Token send successfully");
+                user.sendMessage(Command.SESSION_TOKEN, this.username + ' ' + token);
+            } else {
+                sendMessage(Command.BAD_RESPONSE, "Please provide a session key");
+            }
         } else {
             sendMessage(Command.BAD_RESPONSE, "User with username '" + username + "' does not exist");
         }

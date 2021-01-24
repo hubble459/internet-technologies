@@ -3,144 +3,21 @@
   <ID>JAVA</ID>
   <OriginalElement />
   <nodes>
-    <node x="68.5" y="1536.5">util.Checksum</node>
-    <node x="37.98317389455781" y="1879.0">process.SocketProcess</node>
-    <node x="122.7329506802721" y="2909.0">process.SocketProcess.OnLoginListener</node>
-    <node x="180.5932079081632" y="1056.0">model.KickRequest</node>
-    <node x="246.55609056122444" y="0.0">model.Command</node>
-    <node x="308.5" y="1403.0">model.Room</node>
-    <node x="302.497619047619" y="853.0">model.Message</node>
-    <node x="229.7329506802721" y="3012.0">MyServer</node>
+    <node x="1053.0" y="0.0">model.KickRequest</node>
+    <node x="510.0" y="1092.0">util.Checksum</node>
+    <node x="456.0" y="0.0">model.Command</node>
+    <node x="729.0" y="0.0">model.Room</node>
+    <node x="266.0" y="1092.0">model.Message</node>
+    <node x="0.0" y="1092.0">MyServer</node>
+    <node x="0.0" y="0.0">process.SocketProcess</node>
+    <node x="775.0" y="1092.0">process.SocketProcess.OnLoginListener</node>
   </nodes>
   <notes />
-  <edges>
-    <edge source="process.SocketProcess" target="process.SocketProcess.OnLoginListener">
-      <point x="-2.8421709430404007E-14" y="490.0" />
-      <point x="243.48317389455778" y="2884.0" />
-      <point x="226.2329506802721" y="2884.0" />
-      <point x="0.0" y="-26.5" />
-    </edge>
-    <edge source="model.KickRequest" target="model.Command">
-      <point x="-73.0" y="-148.5" />
-      <point x="253.5932079081632" y="1016.0" />
-      <point x="266.54761904761904" y="1016.0" />
-      <point x="266.54761904761904" y="833.0" />
-      <point x="314.9560905612244" y="833.0" />
-      <point x="-45.60000000000002" y="401.5" />
-    </edge>
-    <edge source="process.SocketProcess" target="model.Message">
-      <point x="-119.875" y="-490.0" />
-      <point x="123.60817389455781" y="1839.0" />
-      <point x="36.0" y="1839.0" />
-      <point x="36.0" y="1036.0" />
-      <point x="362.19761904761907" y="1036.0" />
-      <point x="-39.799999999999955" y="71.5" />
-    </edge>
-    <edge source="process.SocketProcess.OnLoginListener" target="process.SocketProcess">
-      <point x="-69.0" y="-26.5" />
-      <point x="157.2329506802721" y="2884.0" />
-      <point x="161.2831738945578" y="2884.0" />
-      <point x="-82.20000000000002" y="490.0" />
-    </edge>
-    <edge source="process.SocketProcess" target="model.Room">
-      <point x="17.125" y="-490.0" />
-      <point x="260.6081738945578" y="1809.0" />
-      <point x="325.9375" y="1809.0" />
-      <point x="-122.0625" y="193.0" />
-    </edge>
-    <edge source="MyServer" target="model.Room">
-      <point x="88.40000000000005" y="-93.5" />
-      <point x="428.63295068027213" y="2992.0" />
-      <point x="525.3283269557822" y="2992.0" />
-      <point x="525.3283269557822" y="1859.0" />
-      <point x="570.0625" y="1859.0" />
-      <point x="122.06249999999994" y="193.0" />
-    </edge>
-    <edge source="process.SocketProcess" target="model.Command">
-      <point x="-188.375" y="-490.0" />
-      <point x="55.10817389455781" y="1859.0" />
-      <point x="14.0" y="1859.0" />
-      <point x="14.0" y="823.0" />
-      <point x="269.35609056122445" y="823.0" />
-      <point x="-91.19999999999999" y="401.5" />
-    </edge>
-    <edge source="process.SocketProcess" target="util.Checksum">
-      <point x="-17.125" y="-490.0" />
-      <point x="226.3581738945578" y="1809.0" />
-      <point x="178.5" y="1809.0" />
-      <point x="0.0" y="59.5" />
-    </edge>
-    <edge source="model.Message" target="model.Command">
-      <point x="-49.75" y="-71.5" />
-      <point x="352.247619047619" y="833.0" />
-      <point x="360.55609056122444" y="833.0" />
-      <point x="0.0" y="401.5" />
-    </edge>
-    <edge source="model.Room" target="process.SocketProcess">
-      <point x="17.4375" y="193.0" />
-      <point x="465.4375" y="1849.0" />
-      <point x="397.6081738945578" y="1849.0" />
-      <point x="154.125" y="-490.0" />
-    </edge>
-    <edge source="model.Room" target="model.Command">
-      <point x="119.5714285714285" y="-193.0" />
-      <point x="567.5714285714284" y="1373.0" />
-      <point x="517.0432079081631" y="1373.0" />
-      <point x="517.0432079081631" y="823.0" />
-      <point x="451.75609056122437" y="823.0" />
-      <point x="91.19999999999995" y="401.5" />
-    </edge>
-    <edge source="model.KickRequest" target="model.Message">
-      <point x="73.0" y="-148.5" />
-      <point x="399.5932079081632" y="1036.0" />
-      <point x="401.997619047619" y="1036.0" />
-      <point x="0.0" y="71.5" />
-    </edge>
-    <edge source="model.Room" target="model.Message">
-      <point x="39.857142857142776" y="-193.0" />
-      <point x="487.8571428571428" y="1383.0" />
-      <point x="485.3432079081632" y="1383.0" />
-      <point x="485.3432079081632" y="1036.0" />
-      <point x="441.797619047619" y="1036.0" />
-      <point x="39.799999999999955" y="71.5" />
-    </edge>
-    <edge source="model.KickRequest" target="process.SocketProcess">
-      <point x="-73.0" y="148.5" />
-      <point x="253.5932079081632" y="1383.0" />
-      <point x="58.0" y="1383.0" />
-      <point x="58.0" y="1819.0" />
-      <point x="192.1081738945578" y="1819.0" />
-      <point x="-51.375" y="-490.0" />
-    </edge>
-    <edge source="model.KickRequest" target="model.Room">
-      <point x="73.0" y="148.5" />
-      <point x="399.5932079081632" y="1383.0" />
-      <point x="408.14285714285705" y="1383.0" />
-      <point x="-39.85714285714295" y="-193.0" />
-    </edge>
-    <edge source="MyServer" target="process.SocketProcess.OnLoginListener">
-      <point x="-44.19999999999999" y="-93.5" />
-      <point x="296.0329506802721" y="2982.0" />
-      <point x="226.2329506802721" y="2982.0" />
-      <point x="0.0" y="26.5" />
-    </edge>
-    <edge source="model.Room" target="model.KickRequest">
-      <point x="-119.57142857142861" y="-193.0" />
-      <point x="328.4285714285714" y="1383.0" />
-      <point x="302.25987457482984" y="1383.0" />
-      <point x="-24.33333333333337" y="148.5" />
-    </edge>
-    <edge source="MyServer" target="process.SocketProcess">
-      <point x="-88.39999999999998" y="-93.5" />
-      <point x="251.83295068027212" y="2992.0" />
-      <point x="112.2329506802721" y="2992.0" />
-      <point x="112.2329506802721" y="2884.0" />
-      <point x="79.0831738945578" y="2884.0" />
-      <point x="-164.4" y="490.0" />
-    </edge>
-  </edges>
-  <settings layout="Hierarchic Group" zoom="0.6132399745385106" x="438.4658909803673" y="1504.7053929484127" />
-  <SelectedNodes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="0.4132399745385107" x="940.1050565511788" y="1593.2554413712153" />
+  <SelectedNodes>
+    <node>model.KickRequest</node>
+  </SelectedNodes>
   <Categories>
     <Category>Fields</Category>
     <Category>Constructors</Category>

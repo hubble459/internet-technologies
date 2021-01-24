@@ -44,13 +44,23 @@ o: JSERVER Quentin joined the server
 ### Sad Flow
 
 ```
-c: CONN [name that is already in use]
+c: CONN [name that is already in use] abcd==
 s: 400 User with username 'Quentin' is already logged in
 ```
 
 ```
-c: CONN [name that does not match requirements]
+c: CONN [name that does not match requirements] abcd==
 s: 400 Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]
+```
+
+```
+c: CONN [username] abc
+s: 400 Faulty public key
+```
+
+```
+c: CONN [username]
+s: 400 Please append a key after the username
 ```
 
 # Bericht Versturen
@@ -327,11 +337,61 @@ c: VOTE unknown_user
 s: 400 No user with this username found
 ```
 
+# Handshake (krijg de public key van een gebruiker)
+
+### Happy Flow
+
+Joost wilt een privé bericht naar Quentin sturen. Dus wilt hij een sessie starten.
+Hiervoor heeft Joost eerst Quentin's public key nodig.
+
+```
+c: SHAKE Quentin
+s: 200 abcd==
+```
+
+# Sad Flow
+
+Onbekende gebruikersnaam
+```
+c: SHAKE Quenny
+s: 400 User with username 'Quenny' does not exist
+```
+
+
+# Start Encrypted Sessie (RSA en AES)
+
+### Happy Flow
+q: Quentin
+```
+c: SESSION Quentin abcde== <- [Base64[RSA[session_key]]]
+s: 200 Token send successfully
+q: SESSION Joost abcde== <- [Base64[RSA[session_key]]]
+```
+
+Quentin kan dan met zijn private key de token uit het bericht halen.
+
+### Sad Flow
+
+Onbekende gebruikersnaam
+```
+c: SESSION Quenny abcde==
+s: 400 User with username 'Quenny' does not exist
+```
+
+Geen session key meegegeven.
+```
+c: SESSION Quenny
+s: 400 Please provide a session key
+```
+
 # WHISPER (Private Message / Direct Message)
 
 *Een privé bericht (direct message) sturen naar een andere gebruiker.*
 
 Als je een bericht bericht naar een specifiek iemand wil sturen gebruik je de `SEND` command.
+
+De bericht zijn encrypted met de sessie key,
+maar om het duidelijk te houden hebben we in de voorbeelden plain tekst gebruikt.
 
 ### Happy Flow
 
