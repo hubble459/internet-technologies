@@ -37,30 +37,10 @@ public class Discord3 {
     public void run() {
         // Public and private keys
         try {
-            SecretKey secret = AESUtil.generateKey();
-            String sec = Base64.getEncoder().encodeToString(secret.getEncoded());
-
-            String owo = AESUtil.encrypt("owo", secret);
-            System.out.println(owo);
-            owo = AESUtil.decrypt(owo, secret);
-            System.out.println(owo);
-
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
             KeyPair kp = Shared.keyPair = kpg.genKeyPair();
-            String puk = Shared.publicKeyBase64 = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
-            System.out.println(puk);
-
-
-            byte[] data = sec.getBytes(StandardCharsets.UTF_8);
-            // Asynchroon
-            Cipher cipher = Cipher.getInstance("RSA");
-
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(puk.getBytes(StandardCharsets.UTF_8)));
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            PublicKey pubKey = keyFactory.generatePublic(keySpec);
-            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-            byte[] bytesToSend = cipher.doFinal(data);
+            Shared.publicKeyBase64 = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
 
             // START Quentin
             // Quentin: token encoden met PUK
@@ -68,10 +48,6 @@ public class Discord3 {
             // Joost: decode token
             // Joost: PM nsdghwsjhr
             // Quentin: nsfhswkhgfwes -> kutkind
-
-            cipher.init(Cipher.DECRYPT_MODE, kp.getPrivate());
-            byte[] decrypted = cipher.doFinal(bytesToSend);
-            System.out.println(new String(decrypted));
         } catch (Exception e) {
             e.printStackTrace();
         }

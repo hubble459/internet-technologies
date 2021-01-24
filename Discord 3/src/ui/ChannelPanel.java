@@ -140,6 +140,11 @@ public class ChannelPanel {
         }
     }
 
+    public void reload() {
+        roomList.repaint();
+        userList.repaint();
+    }
+
     public interface OnChannelSelect {
         void channel(Channel channel);
     }

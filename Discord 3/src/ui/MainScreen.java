@@ -249,6 +249,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                         for (String room : rooms) {
                             channelPanel.addRoom(new RoomChannel(room));
                         }
+                        SwingUtilities.invokeLater(() -> channelPanel.reload());
                     }
                     return false;
                 })
@@ -391,11 +392,11 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
         if (channel != null) {
             if (save && chatPanel.currentChannel() != channel) {
                 channel.addMessage(message);
+                channel.addNotification();
+                channelPanel.refreshTabNotificationCount();
             } else {
                 chatPanel.addMessage(message, save);
             }
-            channel.addNotification();
-            channelPanel.refreshTabNotificationCount();
         }
     }
 
@@ -478,7 +479,6 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                         "   - Select a file to upload and send\n" +
                         "For more information consult the documentation in the git-repo",
                 "Help", JOptionPane.INFORMATION_MESSAGE));
-
 
 
         // Add a timeout button
