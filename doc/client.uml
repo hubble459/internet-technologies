@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="1190.7775290900427" y="2476.0">helper.model.Request.Builder</node>
+    <node x="388.17142857142835" y="1125.0">helper.SocketHelper.Interfaces</node>
+    <node x="2163.3038847117796" y="3434.0">ui.ChatPanel</node>
+    <node x="108.48595209328369" y="4539.0">Discord3</node>
+    <node x="1216.9880952380954" y="2937.0">helper.model.Request</node>
+    <node x="2695.3614597937653" y="3092.5">ui.ChannelPanel.OnChannelSelect</node>
+    <node x="2995.528126460432" y="3092.5">model.MainChannel</node>
+    <node x="1382.4140764214217" y="1450.5">helper.model.Request.OnResponse</node>
+    <node x="157.07142857142844" y="1450.5">helper.SocketHelper.Interfaces.OnDisconnectListener</node>
+    <node x="557.2775290900427" y="1659.0">helper.SocketHelper</node>
+    <node x="1970.0538847117796" y="3995.0">ui.MainScreen</node>
+    <node x="0.0" y="386.0">helper.Shared</node>
+    <node x="571.0714285714284" y="1450.5">helper.SocketHelper.Interfaces.OnConnectListener</node>
+    <node x="2675.3614597937653" y="3412.0">ui.ChannelPanel</node>
+    <node x="3160.949718045113" y="3092.5">model.UserChannel</node>
+    <node x="3255.653126460432" y="3578.5">util.Checksum</node>
+    <node x="2056.1140764214215" y="0.0">helper.model.Command</node>
+    <node x="2889.780743088088" y="2476.5">model.Channel</node>
+    <node x="2489.3614597937653" y="3092.5">ui.ChatPanel.OnUploadListener</node>
+    <node x="1091.2775290900427" y="1990.5">helper.exception.BadRequestException</node>
+    <node x="3371.653126460432" y="3092.5">model.RoomChannel</node>
+    <node x="1717.3614597937653" y="3456.0">ui.KickPanel</node>
+    <node x="775.0714285714287" y="1406.0">helper.SocketHelper.ActionOnDisconnect</node>
+    <node x="1466.777529090043" y="1024.0">helper.model.Message</node>
+    <node x="384.07142857142844" y="1450.5">helper.SocketHelper.Interfaces.OnSendListener</node>
+    <node x="1965.3614597937653" y="3092.5">ui.ChatPanel.CommandListener</node>
+    <node x="905.2775290900428" y="1990.5">helper.model.Request.WaitForResponse</node>
+    <node x="3014.1140764214215" y="1923.0">model.Channel.ChannelType</node>
+    <node x="1113.3630952380954" y="1450.5">helper.SocketHelper.Interfaces.OnReceivedListener</node>
+    <node x="2188.3614597937653" y="3092.5">model.DisabledItemSelectionModel</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="ui.MainScreen" target="model.UserChannel">
+      <point x="86.07499999999982" y="-237.0" />
+      <point x="2212.6288847117794" y="3935.0" />
+      <point x="3245.153126460432" y="3935.0" />
+      <point x="3245.153126460432" y="3382.0" />
+      <point x="3256.574718045113" y="3382.0" />
+      <point x="19.125" y="27.0" />
+    </edge>
+    <edge source="Discord3" target="helper.model.Request">
+      <point x="0.0" y="-126.5" />
+      <point x="200.4859520932837" y="4489.0" />
+      <point x="67.66666666666652" y="4489.0" />
+      <point x="67.66666666666652" y="3392.0" />
+      <point x="1259.654761904762" y="3392.0" />
+      <point x="-85.33333333333326" y="182.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="model.RoomChannel">
+      <point x="133.0250000000001" y="-237.0" />
+      <point x="2259.5788847117797" y="3965.0" />
+      <point x="3493.153126460432" y="3965.0" />
+      <point x="40.5" y="27.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="helper.model.Command">
+      <point x="148.67500000000018" y="-237.0" />
+      <point x="2275.2288847117798" y="3975.0" />
+      <point x="3554.012218045113" y="3975.0" />
+      <point x="3554.012218045113" y="954.0" />
+      <point x="2234.68550499285" y="954.0" />
+      <point x="78.57142857142844" y="457.0" />
+    </edge>
+    <edge source="model.Channel.ChannelType" target="model.Channel">
+      <point x="-38.59999999999991" y="94.5" />
+      <point x="3072.0140764214216" y="2456.0" />
+      <point x="3076.780743088088" y="2456.0" />
+      <point x="85.0" y="-160.0" />
+    </edge>
+    <edge source="ui.ChatPanel" target="model.Channel">
+      <point x="39.07692307692332" y="-204.5" />
+      <point x="2329.380807788703" y="3342.0" />
+      <point x="2467.8614597937653" y="3342.0" />
+      <point x="2467.8614597937653" y="2877.0" />
+      <point x="2898.280743088088" y="2877.0" />
+      <point x="-93.5" y="160.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="model.Channel">
+      <point x="54.77500000000009" y="-237.0" />
+      <point x="2181.3288847117797" y="3915.0" />
+      <point x="2979.8614597937653" y="3915.0" />
+      <point x="2979.8614597937653" y="2917.0" />
+      <point x="2983.280743088088" y="2917.0" />
+      <point x="-8.5" y="160.0" />
+    </edge>
+    <edge source="model.Channel.ChannelType" target="helper.model.Command">
+      <point x="48.25" y="-94.5" />
+      <point x="3158.8640764214215" y="1639.0" />
+      <point x="3116.1140764214215" y="1639.0" />
+      <point x="3116.1140764214215" y="964.0" />
+      <point x="2220.399790707136" y="964.0" />
+      <point x="64.28571428571422" y="457.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.SocketHelper.Interfaces.OnSendListener">
+      <point x="-71.75" y="-358.5" />
+      <point x="649.5275290900427" y="1599.0" />
+      <point x="425.82142857142844" y="1599.0" />
+      <point x="-41.75" y="27.0" />
+    </edge>
+    <edge source="ui.ChatPanel.CommandListener" target="helper.model.Message">
+      <point x="0.0" y="-27.0" />
+      <point x="2055.3614597937653" y="1326.0" />
+      <point x="1675.672265932148" y="1326.0" />
+      <point x="61.8947368421052" y="116.0" />
+    </edge>
+    <edge source="ui.ChatPanel" target="helper.model.Command">
+      <point x="19.538461538461434" y="-204.5" />
+      <point x="2309.842346250241" y="3332.0" />
+      <point x="2452.8614597937653" y="3332.0" />
+      <point x="2452.8614597937653" y="1004.0" />
+      <point x="2163.2569335642793" y="1004.0" />
+      <point x="7.142857142857338" y="457.0" />
+    </edge>
+    <edge source="ui.ChatPanel" target="helper.model.Message">
+      <point x="-19.538461538461434" y="-204.5" />
+      <point x="2270.765423173318" y="3342.0" />
+      <point x="2177.8614597937653" y="3342.0" />
+      <point x="2177.8614597937653" y="1296.0" />
+      <point x="1722.093318563727" y="1296.0" />
+      <point x="108.31578947368416" y="116.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="helper.model.Message">
+      <point x="-23.47499999999991" y="-237.0" />
+      <point x="2103.0788847117797" y="3895.0" />
+      <point x="1954.8614597937653" y="3895.0" />
+      <point x="1954.8614597937653" y="1336.0" />
+      <point x="1660.1985817216218" y="1336.0" />
+      <point x="46.42105263157896" y="116.0" />
+    </edge>
+    <edge source="model.UserChannel" target="model.Channel.ChannelType">
+      <point x="51.0" y="-27.0" />
+      <point x="3288.449718045113" y="2917.0" />
+      <point x="3280.447409754755" y="2917.0" />
+      <point x="3280.447409754755" y="2456.0" />
+      <point x="3149.2140764214214" y="2456.0" />
+      <point x="38.59999999999991" y="94.5" />
+    </edge>
+    <edge source="ui.KickPanel" target="helper.SocketHelper">
+      <point x="-54.0" y="-182.5" />
+      <point x="1771.3614597937653" y="3372.0" />
+      <point x="1828.9404320431586" y="3372.0" />
+      <point x="1828.9404320431586" y="2406.0" />
+      <point x="844.2775290900427" y="2406.0" />
+      <point x="123.0" y="358.5" />
+    </edge>
+    <edge source="helper.model.Message" target="helper.Shared">
+      <point x="-98.0" y="-116.0" />
+      <point x="1515.777529090043" y="934.0" />
+      <point x="141.66666666666674" y="934.0" />
+      <point x="56.66666666666666" y="71.0" />
+    </edge>
+    <edge source="model.Channel" target="model.Channel.ChannelType">
+      <point x="51.0" y="-160.0" />
+      <point x="3042.780743088088" y="2456.0" />
+      <point x="3033.4140764214217" y="2456.0" />
+      <point x="-77.19999999999982" y="94.5" />
+    </edge>
+    <edge source="model.MainChannel" target="model.Channel.ChannelType">
+      <point x="44.666666666666515" y="-27.0" />
+      <point x="3107.1947931270984" y="2917.0" />
+      <point x="3110.6140764214215" y="2917.0" />
+      <point x="0.0" y="94.5" />
+    </edge>
+    <edge source="ui.ChatPanel" target="ui.ChatPanel.CommandListener">
+      <point x="-117.23076923076906" y="-204.5" />
+      <point x="2173.0731154810105" y="3392.0" />
+      <point x="2032.8614597937653" y="3392.0" />
+      <point x="-22.5" y="27.0" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.SocketHelper">
+      <point x="-106.28571428571422" y="-160.5" />
+      <point x="1208.4918148043284" y="2436.0" />
+      <point x="816.9441957567092" y="2436.0" />
+      <point x="95.66666666666652" y="358.5" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.model.Request.Builder">
+      <point x="-32.0" y="-182.5" />
+      <point x="1312.9880952380954" y="2847.0" />
+      <point x="1211.4441957567096" y="2847.0" />
+      <point x="-103.33333333333326" y="160.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="ui.ChatPanel.CommandListener">
+      <point x="-7.824999999999818" y="-237.0" />
+      <point x="2118.7288847117798" y="3885.0" />
+      <point x="2021.9404320431586" y="3885.0" />
+      <point x="2021.9404320431586" y="3392.0" />
+      <point x="1987.8614597937653" y="3392.0" />
+      <point x="-67.5" y="27.0" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.model.Command">
+      <point x="121.59999999999991" y="-182.5" />
+      <point x="1466.5880952380953" y="2917.0" />
+      <point x="1806.911459793765" y="2917.0" />
+      <point x="1806.911459793765" y="994.0" />
+      <point x="2134.68550499285" y="994.0" />
+      <point x="-21.42857142857156" y="457.0" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.model.Message">
+      <point x="108.79999999999995" y="-182.5" />
+      <point x="1453.7880952380951" y="2907.0" />
+      <point x="1658.9140764214217" y="2907.0" />
+      <point x="1658.9140764214217" y="1366.0" />
+      <point x="1613.777529090043" y="1366.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="model.MainChannel" target="model.Channel">
+      <point x="0.0" y="-27.0" />
+      <point x="3062.528126460432" y="2907.0" />
+      <point x="3017.280743088088" y="2907.0" />
+      <point x="25.5" y="160.0" />
+    </edge>
+    <edge source="helper.model.Request.OnResponse" target="helper.model.Message">
+      <point x="0.0" y="-27.0" />
+      <point x="1504.4140764214217" y="1386.0" />
+      <point x="1567.356476458464" y="1386.0" />
+      <point x="-46.42105263157896" y="116.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="util.Checksum">
+      <point x="101.72499999999991" y="-237.0" />
+      <point x="2228.2788847117795" y="3945.0" />
+      <point x="3363.653126460432" y="3945.0" />
+      <point x="0.0" y="60.0" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnReceivedListener" target="helper.SocketHelper.Interfaces">
+      <point x="-47.5" y="-27.0" />
+      <point x="1160.8630952380954" y="1306.0" />
+      <point x="501.57142857142844" y="1306.0" />
+      <point x="50.39999999999998" y="15.0" />
+    </edge>
+    <edge source="helper.model.Request.WaitForResponse" target="helper.model.Request">
+      <point x="-20.75" y="27.0" />
+      <point x="967.5275290900428" y="2446.0" />
+      <point x="998.0275290900428" y="2446.0" />
+      <point x="998.0275290900428" y="2867.0" />
+      <point x="1287.388095238095" y="2867.0" />
+      <point x="-57.600000000000136" y="-182.5" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnSendListener" target="helper.model.Message">
+      <point x="41.75" y="-27.0" />
+      <point x="509.32142857142844" y="1326.0" />
+      <point x="1474.514371195306" y="1326.0" />
+      <point x="-139.26315789473688" y="116.0" />
+    </edge>
+    <edge source="model.UserChannel" target="model.Channel">
+      <point x="-51.0" y="-27.0" />
+      <point x="3186.449718045113" y="2897.0" />
+      <point x="3034.280743088088" y="2897.0" />
+      <point x="42.5" y="160.0" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces" target="helper.SocketHelper">
+      <point x="-25.200000000000045" y="15.0" />
+      <point x="425.9714285714283" y="1376.0" />
+      <point x="373.57142857142844" y="1376.0" />
+      <point x="373.57142857142844" y="1609.0" />
+      <point x="629.0275290900427" y="1609.0" />
+      <point x="-92.25" y="-358.5" />
+    </edge>
+    <edge source="Discord3" target="helper.model.Command">
+      <point x="78.85714285714289" y="-126.5" />
+      <point x="279.3430949504266" y="4519.0" />
+      <point x="3565.012218045113" y="4519.0" />
+      <point x="3565.012218045113" y="944.0" />
+      <point x="2248.9712192785646" y="944.0" />
+      <point x="92.85714285714266" y="457.0" />
+    </edge>
+    <edge source="ui.ChannelPanel" target="model.RoomChannel">
+      <point x="130.66666666666652" y="-226.5" />
+      <point x="2953.028126460432" y="3392.0" />
+      <point x="3412.153126460432" y="3392.0" />
+      <point x="-40.5" y="27.0" />
+    </edge>
+    <edge source="ui.ChatPanel.CommandListener" target="ui.ChatPanel">
+      <point x="67.5" y="27.0" />
+      <point x="2122.8614597937653" y="3372.0" />
+      <point x="2212.1500385579334" y="3372.0" />
+      <point x="-78.15384615384619" y="-204.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="helper.SocketHelper">
+      <point x="-117.375" y="-237.0" />
+      <point x="2009.1788847117796" y="3955.0" />
+      <point x="718.2775290900427" y="3955.0" />
+      <point x="718.2775290900427" y="2446.0" />
+      <point x="652.9441957567092" y="2446.0" />
+      <point x="-68.33333333333348" y="358.5" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.SocketHelper.Interfaces.OnDisconnectListener">
+      <point x="-133.25" y="-358.5" />
+      <point x="588.0275290900427" y="1629.0" />
+      <point x="208.57142857142844" y="1629.0" />
+      <point x="-51.5" y="27.0" />
+    </edge>
+    <edge source="Discord3" target="helper.Shared">
+      <point x="-78.85714285714289" y="-126.5" />
+      <point x="121.6288092361408" y="4519.0" />
+      <point x="34.666666666666515" y="4519.0" />
+      <point x="34.666666666666515" y="1004.0" />
+      <point x="28.333333333333258" y="1004.0" />
+      <point x="-56.66666666666674" y="71.0" />
+    </edge>
+    <edge source="ui.KickPanel" target="helper.model.Message">
+      <point x="54.0" y="-182.5" />
+      <point x="1879.3614597937653" y="3392.0" />
+      <point x="1861.9404320431586" y="3392.0" />
+      <point x="1861.9404320431586" y="1356.0" />
+      <point x="1629.2512133005691" y="1356.0" />
+      <point x="15.473684210526244" y="116.0" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.model.Request.OnResponse">
+      <point x="44.799999999999955" y="-182.5" />
+      <point x="1389.7880952380951" y="2857.0" />
+      <point x="1508.1065013394364" y="2857.0" />
+      <point x="1508.1065013394364" y="1639.0" />
+      <point x="1504.4140764214217" y="1639.0" />
+      <point x="0.0" y="27.0" />
+    </edge>
+    <edge source="ui.KickPanel" target="helper.model.Request">
+      <point x="-90.0" y="-182.5" />
+      <point x="1735.3614597937653" y="3392.0" />
+      <point x="1430.3214285714284" y="3392.0" />
+      <point x="85.33333333333326" y="182.5" />
+    </edge>
+    <edge source="ui.ChannelPanel" target="model.UserChannel">
+      <point x="65.33333333333348" y="-226.5" />
+      <point x="2887.694793127099" y="3372.0" />
+      <point x="3180.074718045113" y="3372.0" />
+      <point x="-57.375" y="27.0" />
+    </edge>
+    <edge source="ui.ChatPanel" target="ui.ChatPanel.OnUploadListener">
+      <point x="78.15384615384619" y="-204.5" />
+      <point x="2368.4577308656258" y="3362.0" />
+      <point x="2511.1114597937653" y="3362.0" />
+      <point x="-65.25" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnSendListener" target="helper.SocketHelper.Interfaces">
+      <point x="-41.75" y="-27.0" />
+      <point x="425.82142857142844" y="1386.0" />
+      <point x="451.17142857142835" y="1386.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="helper.SocketHelper.ActionOnDisconnect" target="helper.SocketHelper">
+      <point x="77.66666666666663" y="71.5" />
+      <point x="969.2380952380953" y="1589.0" />
+      <point x="772.5275290900427" y="1589.0" />
+      <point x="51.25" y="-358.5" />
+    </edge>
+    <edge source="helper.model.Request.OnResponse" target="helper.model.Request">
+      <point x="48.799999999999955" y="27.0" />
+      <point x="1553.2140764214216" y="1639.0" />
+      <point x="1565.1640764214217" y="1639.0" />
+      <point x="1565.1640764214217" y="2867.0" />
+      <point x="1402.5880952380953" y="2867.0" />
+      <point x="57.59999999999991" y="-182.5" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.model.Request.WaitForResponse">
+      <point x="-44.799999999999955" y="-182.5" />
+      <point x="1300.1880952380952" y="2857.0" />
+      <point x="1009.0275290900428" y="2857.0" />
+      <point x="20.75" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.model.Command">
+      <point x="71.75" y="-358.5" />
+      <point x="793.0275290900427" y="1599.0" />
+      <point x="1091.8630952380954" y="1599.0" />
+      <point x="1091.8630952380954" y="954.0" />
+      <point x="2077.542647849993" y="954.0" />
+      <point x="-78.57142857142867" y="457.0" />
+    </edge>
+    <edge source="ui.KickPanel" target="helper.SocketHelper.Interfaces.OnReceivedListener">
+      <point x="18.0" y="-182.5" />
+      <point x="1843.3614597937653" y="3392.0" />
+      <point x="1850.9404320431586" y="3392.0" />
+      <point x="1850.9404320431586" y="1629.0" />
+      <point x="1271.6964285714287" y="1629.0" />
+      <point x="63.33333333333326" y="27.0" />
+    </edge>
+    <edge source="ui.ChatPanel" target="model.DisabledItemSelectionModel">
+      <point x="0.0" y="-204.5" />
+      <point x="2290.3038847117796" y="3322.0" />
+      <point x="2315.3614597937653" y="3322.0" />
+      <point x="0.0" y="27.0" />
+    </edge>
+    <edge source="ui.ChannelPanel" target="model.MainChannel">
+      <point x="32.666666666666515" y="-226.5" />
+      <point x="2855.028126460432" y="3362.0" />
+      <point x="3029.028126460432" y="3362.0" />
+      <point x="-33.5" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.model.Message">
+      <point x="92.25" y="-358.5" />
+      <point x="813.5275290900427" y="1609.0" />
+      <point x="1102.8630952380954" y="1609.0" />
+      <point x="1102.8630952380954" y="1346.0" />
+      <point x="1505.4617396163587" y="1346.0" />
+      <point x="-108.31578947368416" y="116.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="ui.ChatPanel.OnUploadListener">
+      <point x="23.47499999999991" y="-237.0" />
+      <point x="2150.0288847117795" y="3895.0" />
+      <point x="2595.4358624233764" y="3895.0" />
+      <point x="2595.4358624233764" y="3392.0" />
+      <point x="2641.6114597937653" y="3392.0" />
+      <point x="65.25" y="27.0" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.model.Request">
+      <point x="-20.666666666666742" y="160.5" />
+      <point x="1294.1108624233761" y="2827.0" />
+      <point x="1338.5880952380953" y="2827.0" />
+      <point x="-6.400000000000091" y="-182.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="ui.KickPanel">
+      <point x="-70.42500000000018" y="-237.0" />
+      <point x="2056.1288847117794" y="3925.0" />
+      <point x="1771.3614597937653" y="3925.0" />
+      <point x="-54.0" y="182.5" />
+    </edge>
+    <edge source="ui.KickPanel" target="helper.model.Command">
+      <point x="90.0" y="-182.5" />
+      <point x="1915.3614597937653" y="3382.0" />
+      <point x="1872.9404320431586" y="3382.0" />
+      <point x="1872.9404320431586" y="1004.0" />
+      <point x="2148.9712192785646" y="1004.0" />
+      <point x="-7.142857142857338" y="457.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.SocketHelper.ActionOnDisconnect">
+      <point x="10.25" y="-358.5" />
+      <point x="731.5275290900427" y="1569.0" />
+      <point x="813.904761904762" y="1569.0" />
+      <point x="-77.66666666666663" y="71.5" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnDisconnectListener" target="helper.SocketHelper.Interfaces">
+      <point x="0.0" y="-27.0" />
+      <point x="260.07142857142844" y="1366.0" />
+      <point x="400.77142857142826" y="1366.0" />
+      <point x="-50.39999999999998" y="15.0" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.model.Request.OnResponse">
+      <point x="106.28571428571422" y="-160.5" />
+      <point x="1421.0632433757569" y="2456.0" />
+      <point x="1477.4703862329" y="2456.0" />
+      <point x="1477.4703862329" y="1639.0" />
+      <point x="1455.6140764214217" y="1639.0" />
+      <point x="-48.799999999999955" y="27.0" />
+    </edge>
+    <edge source="model.RoomChannel" target="model.Channel">
+      <point x="-54.0" y="-27.0" />
+      <point x="3398.653126460432" y="2877.0" />
+      <point x="3068.280743088088" y="2877.0" />
+      <point x="76.5" y="160.0" />
+    </edge>
+    <edge source="helper.model.Message" target="helper.model.Command">
+      <point x="0.0" y="-116.0" />
+      <point x="1613.777529090043" y="974.0" />
+      <point x="2106.1140764214215" y="974.0" />
+      <point x="-50.0" y="457.0" />
+    </edge>
+    <edge source="ui.ChannelPanel" target="ui.ChannelPanel.OnChannelSelect">
+      <point x="-65.33333333333348" y="-226.5" />
+      <point x="2757.028126460432" y="3372.0" />
+      <point x="2723.028126460432" y="3372.0" />
+      <point x="-55.333333333333485" y="27.0" />
+    </edge>
+    <edge source="ui.ChannelPanel" target="model.Channel">
+      <point x="-98.0" y="-226.5" />
+      <point x="2724.3614597937653" y="3382.0" />
+      <point x="2684.8614597937653" y="3382.0" />
+      <point x="2684.8614597937653" y="2907.0" />
+      <point x="2949.280743088088" y="2907.0" />
+      <point x="-42.5" y="160.0" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.model.Request.WaitForResponse">
+      <point x="-70.85714285714289" y="-160.5" />
+      <point x="1243.9203862329" y="2426.0" />
+      <point x="1050.5275290900427" y="2426.0" />
+      <point x="62.25" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.SocketHelper.Interfaces.OnReceivedListener">
+      <point x="112.75" y="-358.5" />
+      <point x="834.0275290900427" y="1619.0" />
+      <point x="1145.0297619047622" y="1619.0" />
+      <point x="-63.33333333333326" y="27.0" />
+    </edge>
+    <edge source="Discord3" target="ui.MainScreen">
+      <point x="26.285714285714278" y="-126.5" />
+      <point x="226.7716663789979" y="4499.0" />
+      <point x="2048.3038847117796" y="4499.0" />
+      <point x="-78.25" y="237.0" />
+    </edge>
+    <edge source="model.RoomChannel" target="model.Channel.ChannelType">
+      <point x="54.0" y="-27.0" />
+      <point x="3506.653126460432" y="2917.0" />
+      <point x="3487.11919575671" y="2917.0" />
+      <point x="3487.11919575671" y="2446.0" />
+      <point x="3187.8140764214213" y="2446.0" />
+      <point x="77.19999999999982" y="94.5" />
+    </edge>
+    <edge source="ui.ChatPanel.OnUploadListener" target="ui.ChatPanel">
+      <point x="21.75" y="27.0" />
+      <point x="2598.1114597937653" y="3382.0" />
+      <point x="2407.5346539425486" y="3382.0" />
+      <point x="117.23076923076906" y="-204.5" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.exception.BadRequestException">
+      <point x="-35.42857142857133" y="-160.5" />
+      <point x="1279.3489576614716" y="2416.0" />
+      <point x="1192.7775290900427" y="2416.0" />
+      <point x="0.0" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.model.Request">
+      <point x="-13.666666666666742" y="358.5" />
+      <point x="707.6108624233759" y="2426.0" />
+      <point x="740.2775290900427" y="2426.0" />
+      <point x="740.2775290900427" y="2917.0" />
+      <point x="1223.388095238095" y="2917.0" />
+      <point x="-121.60000000000014" y="-182.5" />
+    </edge>
+    <edge source="helper.model.Request" target="helper.SocketHelper">
+      <point x="-96.0" y="-182.5" />
+      <point x="1248.9880952380954" y="2897.0" />
+      <point x="769.8214285714287" y="2897.0" />
+      <point x="769.8214285714287" y="2456.0" />
+      <point x="762.2775290900427" y="2456.0" />
+      <point x="41.0" y="358.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="helper.model.Request">
+      <point x="-86.07499999999982" y="-237.0" />
+      <point x="2040.4788847117798" y="3935.0" />
+      <point x="1344.9880952380954" y="3935.0" />
+      <point x="0.0" y="182.5" />
+    </edge>
+    <edge source="model.Channel" target="helper.model.Message">
+      <point x="-85.0" y="-160.0" />
+      <point x="2906.780743088088" y="2446.0" />
+      <point x="2941.280743088088" y="2446.0" />
+      <point x="2941.280743088088" y="1286.0" />
+      <point x="1737.5670027742533" y="1286.0" />
+      <point x="123.7894736842104" y="116.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="ui.ChatPanel">
+      <point x="7.824999999999818" y="-237.0" />
+      <point x="2134.3788847117794" y="3885.0" />
+      <point x="2290.3038847117796" y="3885.0" />
+      <point x="0.0" y="204.5" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnConnectListener" target="helper.model.Message">
+      <point x="46.0" y="-27.0" />
+      <point x="709.0714285714284" y="1336.0" />
+      <point x="1489.9880554058325" y="1336.0" />
+      <point x="-123.7894736842104" y="116.0" />
+    </edge>
+    <edge source="model.Channel" target="helper.model.Command">
+      <point x="-17.0" y="-160.0" />
+      <point x="2974.780743088088" y="2456.0" />
+      <point x="2963.280743088088" y="2456.0" />
+      <point x="2963.280743088088" y="994.0" />
+      <point x="2177.542647849993" y="994.0" />
+      <point x="21.42857142857156" y="457.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.model.Request.OnResponse">
+      <point x="153.75" y="-358.5" />
+      <point x="875.0275290900427" y="1639.0" />
+      <point x="1406.8140764214218" y="1639.0" />
+      <point x="-97.59999999999991" y="27.0" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnConnectListener" target="helper.SocketHelper.Interfaces">
+      <point x="-46.0" y="-27.0" />
+      <point x="617.0714285714284" y="1316.0" />
+      <point x="476.3714285714284" y="1316.0" />
+      <point x="25.200000000000045" y="15.0" />
+    </edge>
+    <edge source="helper.SocketHelper.Interfaces.OnReceivedListener" target="helper.model.Message">
+      <point x="47.5" y="-27.0" />
+      <point x="1255.8630952380954" y="1356.0" />
+      <point x="1520.935423826885" y="1356.0" />
+      <point x="-92.84210526315792" y="116.0" />
+    </edge>
+    <edge source="helper.SocketHelper" target="helper.SocketHelper.Interfaces.OnConnectListener">
+      <point x="-30.75" y="-358.5" />
+      <point x="690.5275290900427" y="1579.0" />
+      <point x="617.0714285714284" y="1579.0" />
+      <point x="-46.0" y="27.0" />
+    </edge>
+    <edge source="ui.ChannelPanel.OnChannelSelect" target="model.Channel">
+      <point x="0.0" y="-27.0" />
+      <point x="2778.3614597937653" y="2917.0" />
+      <point x="2966.280743088088" y="2917.0" />
+      <point x="-25.5" y="160.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="model.MainChannel">
+      <point x="70.42500000000018" y="-237.0" />
+      <point x="2196.9788847117798" y="3925.0" />
+      <point x="3096.028126460432" y="3925.0" />
+      <point x="33.5" y="27.0" />
+    </edge>
+    <edge source="ui.MainScreen" target="ui.ChannelPanel">
+      <point x="39.125" y="-237.0" />
+      <point x="2165.6788847117796" y="3905.0" />
+      <point x="2822.3614597937653" y="3905.0" />
+      <point x="0.0" y="226.5" />
+    </edge>
+    <edge source="Discord3" target="helper.SocketHelper">
+      <point x="-26.28571428571422" y="-126.5" />
+      <point x="174.20023780756947" y="4499.0" />
+      <point x="56.666666666666515" y="4499.0" />
+      <point x="56.666666666666515" y="2456.0" />
+      <point x="598.2775290900427" y="2456.0" />
+      <point x="-123.0" y="358.5" />
+    </edge>
+    <edge source="ui.MainScreen" target="helper.Shared">
+      <point x="-148.67500000000018" y="-237.0" />
+      <point x="1977.8788847117794" y="3975.0" />
+      <point x="78.66666666666652" y="3975.0" />
+      <point x="78.66666666666652" y="1004.0" />
+      <point x="85.0" y="1004.0" />
+      <point x="0.0" y="71.0" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.model.Message">
+      <point x="35.42857142857133" y="-160.5" />
+      <point x="1350.2061005186142" y="2456.0" />
+      <point x="1360.9140764214217" y="2456.0" />
+      <point x="1360.9140764214217" y="1366.0" />
+      <point x="1536.4091080374114" y="1366.0" />
+      <point x="-77.36842105263145" y="116.0" />
+    </edge>
+    <edge source="ui.ChannelPanel.OnChannelSelect" target="ui.ChannelPanel">
+      <point x="55.3333333333336" y="27.0" />
+      <point x="2833.694793127099" y="3392.0" />
+      <point x="2822.3614597937653" y="3392.0" />
+      <point x="0.0" y="-226.5" />
+    </edge>
+    <edge source="helper.model.Request.Builder" target="helper.model.Command">
+      <point x="0.0" y="-160.5" />
+      <point x="1314.7775290900427" y="2446.0" />
+      <point x="1349.9140764214217" y="2446.0" />
+      <point x="1349.9140764214217" y="964.0" />
+      <point x="2091.8283621357077" y="964.0" />
+      <point x="-64.28571428571422" y="457.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.20000000000000015" x="2549.0" y="3204.166666666668" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
