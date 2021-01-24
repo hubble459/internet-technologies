@@ -23,7 +23,6 @@ public class ServerTest {
     private static SocketHelper quentinHelper;
     private static SocketHelper joostHelper;
     private static KeyPair quentinKeyPair;
-    private static KeyPair joostKeyPair;
     private static boolean loggedIn;
 
     @BeforeAll
@@ -34,7 +33,7 @@ public class ServerTest {
 
         joostHelper = new SocketHelper("localhost", 1337);
         joostHelper.setDebug(false);
-        joostKeyPair = generateKeyPair();
+        KeyPair joostKeyPair = generateKeyPair();
         login("Joost", joostKeyPair, joostHelper);
     }
 
@@ -59,6 +58,8 @@ public class ServerTest {
             loggedIn = true;
             send(Command.LOGIN, "Quentin " + publicKeyBase64(quentinKeyPair), test(true));
         }
+        // Already logged in
+        send(Command.LOGIN, "Quentin " + publicKeyBase64(quentinKeyPair), test(false));
     }
 
     @Test
