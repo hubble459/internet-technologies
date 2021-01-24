@@ -196,7 +196,7 @@ public class Request {
          * @param wait lock
          * @return this for chaining
          */
-        public Builder lock(WaitForResponse wait) {
+        protected Builder lock(WaitForResponse wait) {
             request.waitForResponse = wait;
             return this;
         }

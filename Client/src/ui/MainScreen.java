@@ -188,7 +188,7 @@ public class MainScreen extends JFrame implements ChatPanel.OnUploadListener, Ch
                 case VOTES:
                     // Upon receiving a VOTES message, also start the kick
                     // if it wasn't already started, so no 'break;'
-                case VOTE_KICK:
+                case START_KICK:
                     // Someone started the kick
                     if (!kickPopup) {
                         startKick();

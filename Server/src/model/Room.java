@@ -25,7 +25,7 @@ public class Room {
      * @param message to send
      */
     public void broadcastInRoom(Message message) {
-        for (SocketProcess client : clients) {
+        for (SocketProcess client : new ArrayList<>(clients)) {
             client.sendMessage(message);
         }
     }
@@ -100,7 +100,7 @@ public class Room {
         if (kickRequest == null) {
             kickRequest = new KickRequest(this);
             starter.sendMessage(Command.GOOD_RESPONSE, roomName);
-            broadcastInRoom(new Message(Command.VOTE_KICK, "Vote kick started"));
+            broadcastInRoom(new Message(Command.START_KICK, "Vote kick started"));
         } else {
             starter.sendMessage(Command.BAD_RESPONSE, "A kick has already been requested");
         }

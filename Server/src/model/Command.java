@@ -16,7 +16,7 @@ public enum Command {
     BROADCAST_IN_ROOM("TALK"), // TALK <message> (to speak in room)
     CREATE_ROOM("MAKE"), // MAKE <room_name> (to create)
     WHISPER("SEND"), // SEND <username> (to private message)
-    VOTE_KICK("KICK"), // KICK (to start kick)
+    START_KICK("KICK"), // KICK (to start kick)
     VOTE_SKIP("SKIP"), // SKIP (to skip vote)
     VOTE_KICK_USER("VOTE"), // KICK <username> (to vote for a user)
     LOGIN("CONN"), // CONN <username> (to login)

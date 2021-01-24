@@ -34,7 +34,7 @@ public class ChatPanel {
         textField.addActionListener(e -> sendFromTextField());
         sendButton.addActionListener(e -> sendFromTextField());
         uploadButton.addActionListener(e -> uploadFile());
-        kickButton.addActionListener((e -> commandListener.command(new Message(Command.VOTE_KICK, ""))));
+        kickButton.addActionListener((e -> commandListener.command(new Message(Command.START_KICK, ""))));
     }
 
     /**

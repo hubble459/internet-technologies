@@ -18,7 +18,7 @@ import java.util.*;
  * Upon receiving a response the requester can easily handle and use it
  */
 public class SocketHelper implements Runnable {
-    private static final boolean ENABLE_LOGGING = true; // false if logging should be disabled
+    private static boolean ENABLE_LOGGING = true; // false if logging should be disabled
     // If logging is enabled you can skip logging commands by adding them to the list below
     private static final List<Command> DONT_LOG = Arrays.asList(Command.PONG, Command.PING, Command.FILE);
 
@@ -334,6 +334,10 @@ public class SocketHelper implements Runnable {
 
     public int getPort() {
         return port;
+    }
+
+    public void setDebug(boolean logging) {
+        ENABLE_LOGGING = logging;
     }
 
     public enum ActionOnDisconnect {

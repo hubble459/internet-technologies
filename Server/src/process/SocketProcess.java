@@ -174,7 +174,7 @@ public class SocketProcess implements Runnable {
                     createSession(payload);
                 }
                 break;
-            case VOTE_KICK:
+            case START_KICK:
                 if (ensureLoggedIn() && ensureInRoom()) {
                     room.startKick(this);
                 }
@@ -520,8 +520,8 @@ public class SocketProcess implements Runnable {
             // Username
             String username = parts[0];
             // Username has no spaces and just characters
-            if (username.matches("\\w{3,14}")) {
-                if (parts.length == 2) {
+            if (parts.length == 2) {
+                if (username.matches("\\w{3,14}")) {
                     // Check if user with this username already exists
                     if (!usernameExists(username)) {
                         try {
@@ -559,10 +559,10 @@ public class SocketProcess implements Runnable {
                         sendMessage(Command.BAD_RESPONSE, String.format("User with username '%s' is already logged in", username));
                     }
                 } else {
-                    sendMessage(Command.BAD_RESPONSE, "Please append a key after the username");
+                    sendMessage(Command.BAD_RESPONSE, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
                 }
             } else {
-                sendMessage(Command.BAD_RESPONSE, "Name should be between 3 and 14 characters and should match [a-zA-Z_0-9]");
+                sendMessage(Command.BAD_RESPONSE, "Please append a key after the username");
             }
         } else {
             sendMessage(Command.BAD_RESPONSE, "Please logout first");
@@ -816,7 +816,7 @@ public class SocketProcess implements Runnable {
      */
     public void broadcast(Message message) {
         message.setPayload((username + " " + message.getPayload()).trim());
-        for (SocketProcess client : clients) {
+        for (SocketProcess client : new ArrayList<>(clients)) {
             client.sendMessage(message);
         }
     }
