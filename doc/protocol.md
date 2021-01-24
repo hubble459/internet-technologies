@@ -444,6 +444,7 @@ met een PONG binnen 3 seconden, dan word je automatisch disconnected.
 ```
 s: PING
 c: PONG
+s: 200
 ```
 
 ### Sad Flow
@@ -511,6 +512,6 @@ c: DOWN not_exist.zip uwu
 s: 400 Invalid number of arguments passed
 
 s: FILE Quentin itech.zip 1.2
-c: DOWN itech.zip uwu
+c: DOWN itech.zip
 s: 400 Server could not read file; try again
 ```
