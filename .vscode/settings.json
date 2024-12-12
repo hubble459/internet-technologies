@@ -1,0 +1,7 @@
+{
+    "java.project.sourcePaths": [
+        "server/src/main/java",
+        "client/src/main/java"
+    ],
+    "java.project.referencedLibraries": []
+}
