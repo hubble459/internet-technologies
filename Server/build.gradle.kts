@@ -39,6 +39,12 @@ application {
     mainClass = "nl.hubbie.MyServer"
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "nl.hubbie.MyServer"
+    }
+}
+
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()

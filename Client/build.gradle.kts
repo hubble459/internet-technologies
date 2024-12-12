@@ -37,6 +37,12 @@ application {
     mainClass = "nl.hubbie.Discord3"
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "nl.hubbie.Discord3"
+    }
+}
+
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()

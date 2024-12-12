@@ -1,24 +1,15 @@
 package nl.hubbie;
 
-import nl.hubbie.helper.AESUtil;
 import nl.hubbie.helper.Shared;
 import nl.hubbie.helper.SocketHelper;
 import nl.hubbie.helper.model.Command;
 import nl.hubbie.helper.model.Request;
 import nl.hubbie.ui.MainScreen;
 
-import javax.crypto.Cipher;
-import javax.crypto.SealedObject;
-import javax.crypto.SecretKey;
 import javax.swing.*;
 import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 /**
